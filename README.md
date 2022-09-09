@@ -16,7 +16,7 @@ dependencies:
 
 ```sh
 git clone https://github.com/NomicFoundation/hardhat-boilerplate.git
-cd hardhat-boilerplate
+cd wordle-dapp
 npm install
 ```
 
