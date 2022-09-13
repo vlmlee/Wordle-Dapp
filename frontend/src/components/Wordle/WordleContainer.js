@@ -1,14 +1,16 @@
 import React from "react";
 import {useState} from "react";
 import Wordle from "./Wordle";
+import Keyboard from "./Keyboard";
 import Constants from "./Constants";
+import "./WordleContainer.scss";
 
-function WordleContainer() {
+export default function WordleContainer() {
     const [wordleState, setWordleState] = useState({
         attempt: 0,
         previousAttempts: [],
         solved: false,
-        keysUsed: []
+        keysUsed: [] // { value: "A", keyState: Constants.SOLVED }
     });
     
     const initialState = Array.from({length: 5}, (_, index) => {
@@ -34,7 +36,7 @@ function WordleContainer() {
     };
     
     const makeAttempt = (e) => {
-        if (e.target.value === "ENTER") {
+        if (e.key === "Enter") {
     
             setWordleState({
                 attempt: wordleState.attempt++,
@@ -47,8 +49,9 @@ function WordleContainer() {
         }
     }
     
-    return <div onKeyPress={makeAttempt}>
-        <Wordle currentState={currentState} updateLetter={updateLetter}></Wordle>
+    return <div onKeyDown={makeAttempt}>
+        <h1 className={"wordle-header-title"}>Wordle</h1>
+        <Wordle currentState={currentState} updateLetter={updateLetter} attempts={wordleState.attempt}></Wordle>
         <Keyboard keyboardState={{
             keysUsed: wordleState.keysUsed
         }}/>

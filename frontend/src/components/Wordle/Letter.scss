@@ -1,0 +1,19 @@
+.wordle-letter {
+  display: inline-block;
+  margin: 2.5px;
+  font-family: "Spectral", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.wordle-letter input {
+  width: 62px;
+  height: 62px;
+  text-align: center;
+  font-size: 40px;
+  border: 2px solid #d3d6da;
+  caret-color: transparent;
+}
+
+.wordle-letter input:focus {
+  background-color: yellow;
+  outline: none;
+}
