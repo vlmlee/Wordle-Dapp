@@ -3,20 +3,20 @@
   margin: 2.5px;
   font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-weight: 800;
-}
 
-.wordle-letter input {
-  width: 62px;
-  height: 62px;
-  text-align: center;
-  font-size: 34px;
-  border: 2px solid #d3d6da;
-  caret-color: transparent;
-  text-transform: uppercase;
-  font-weight: 800;
-}
+  input {
+    width: 62px;
+    height: 62px;
+    text-align: center;
+    font-size: 34px;
+    border: 2px solid #d3d6da;
+    caret-color: transparent;
+    text-transform: uppercase;
+    font-weight: 800;
 
-.wordle-letter input:focus {
-  background-color: yellow;
-  outline: none;
+    &:focus {
+      background-color: yellow;
+      outline: none;
+    }
+  }
 }

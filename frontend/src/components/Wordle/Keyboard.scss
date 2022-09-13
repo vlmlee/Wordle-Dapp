@@ -1,0 +1,25 @@
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, -5%);
+}
+
+.keyboard-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+
+  .keyboard-key {
+    border: 1px solid #d3d6da;
+    width: 43px;
+    height: 58px;
+    line-height: 58px;
+    margin: 6px;
+    border-radius: 4px;
+    text-align: center;
+  }
+}
+

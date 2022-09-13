@@ -4,6 +4,7 @@ import Wordle from "./Wordle";
 import Keyboard from "./Keyboard";
 import Constants from "./Constants";
 import "./WordleContainer.scss";
+import uniq from "lodash.uniq";
 
 const initialState = Array.from({length: 5}, (_, index) => {
     return {
@@ -36,8 +37,8 @@ export default function WordleContainer() {
         if (e.key === "Enter") {
             setAttempts(state => state + 1);
             setPreviousStates(state => [...state, currentState]);
-            setKeysUsed(state => [...state, keysUsed]);
             setIsSolved(state => false);
+            setKeysUsed(state => [...state, uniq(currentState.map(letter => letter.value))])
             setCurrentState(state => initialState);
         }
     }
@@ -48,7 +49,7 @@ export default function WordleContainer() {
         return () => {
            document.removeEventListener("keypress", makeAttempt)
         }
-    }, [currentState]);
+    }, [currentState, keysUsed]);
     
     return <div>
         <h1 className={"wordle-header-title"}>Wordle</h1>
@@ -57,7 +58,7 @@ export default function WordleContainer() {
                 updateLetter={updateLetter}
                 attempts={attempts} />
         <Keyboard keyboardState={{
-            keysUsed: keysUsed
+            keysUsed
         }} />
     </div>;
 }
