@@ -1,59 +1,63 @@
 import React from "react";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import Wordle from "./Wordle";
 import Keyboard from "./Keyboard";
 import Constants from "./Constants";
 import "./WordleContainer.scss";
 
+const initialState = Array.from({length: 5}, (_, index) => {
+    return {
+        index,
+        value: "",
+        solveState: Constants.UNSOLVED
+    }
+});
+
 export default function WordleContainer() {
-    const [wordleState, setWordleState] = useState({
-        attempt: 0,
-        previousAttempts: [],
-        solved: false,
-        keysUsed: [] // { value: "A", keyState: Constants.SOLVED }
-    });
-    
-    const initialState = Array.from({length: 5}, (_, index) => {
-        return {
-            index,
-            value: "",
-            solveState: Constants.UNSOLVED
-        }
-    });
-    
+    const [attempts, setAttempts] = useState(0);
+    const [previousStates, setPreviousStates] = useState([]);
+    const [keysUsed, setKeysUsed] = useState([]);
+    const [isSolved, setIsSolved] = useState(false);
     const [currentState, setCurrentState] = useState(initialState);
     
     const updateLetter = (index, value) => {
-        setCurrentState([
-            ...currentState.slice(0, index),
+        setCurrentState(state => [
+            ...state.slice(0, index),
             {
                 index,
                 value,
                 solveState: Constants.UNSOLVED
             },
-            ...currentState.slice(index+1)
+            ...state.slice(index+1)
         ]);
     };
     
     const makeAttempt = (e) => {
         if (e.key === "Enter") {
-    
-            setWordleState({
-                attempt: wordleState.attempt++,
-                previousAttempts: wordleState.previousAttempts.push(currentState),
-                solved: false,
-                keysUsed: wordleState.keysUsed
-            });
-            
-            setCurrentState(initialState);
+            setAttempts(state => state + 1);
+            setPreviousStates(state => [...state, currentState]);
+            setKeysUsed(state => [...state, keysUsed]);
+            setIsSolved(state => false);
+            setCurrentState(state => initialState);
         }
     }
     
-    return <div onKeyDown={makeAttempt}>
+    useEffect(() => {
+        document.addEventListener("keypress", makeAttempt);
+        
+        return () => {
+           document.removeEventListener("keypress", makeAttempt)
+        }
+    }, [currentState]);
+    
+    return <div>
         <h1 className={"wordle-header-title"}>Wordle</h1>
-        <Wordle currentState={currentState} updateLetter={updateLetter} attempts={wordleState.attempt}></Wordle>
+        <Wordle previousStates={previousStates}
+                currentState={currentState}
+                updateLetter={updateLetter}
+                attempts={attempts} />
         <Keyboard keyboardState={{
-            keysUsed: wordleState.keysUsed
-        }}/>
+            keysUsed: keysUsed
+        }} />
     </div>;
 }
