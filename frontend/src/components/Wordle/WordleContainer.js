@@ -34,7 +34,7 @@ export default function WordleContainer() {
     };
     
     const makeAttempt = (e) => {
-        if (e.key === "Enter") {
+        if (attempts < 5 && e.key === "Enter") {
             setAttempts(state => state + 1);
             setPreviousStates(state => [...state, currentState]);
             setIsSolved(state => false);
