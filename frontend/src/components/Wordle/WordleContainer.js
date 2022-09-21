@@ -5,10 +5,11 @@ import Keyboard from "./Keyboard";
 import Constants from "./Constants";
 import "./WordleContainer.scss";
 import uniq from "lodash.uniq";
+import {isWordInWordBank, checkSolution} from "./CheckSolution";
 
 const initialState = Array.from({length: 5}, (_, index) => {
     return {
-        index,
+        position: index,
         value: "",
         solveState: Constants.UNSOLVED
     }
@@ -21,24 +22,35 @@ export default function WordleContainer() {
     const [isSolved, setIsSolved] = useState(false);
     const [currentState, setCurrentState] = useState(initialState);
     
-    const updateLetter = (index, value) => {
-        setCurrentState(state => [
-            ...state.slice(0, index),
-            {
-                index,
-                value,
-                solveState: Constants.UNSOLVED
-            },
-            ...state.slice(index+1)
-        ]);
+    const updateLetter = (position, value) => {
+        if (value !== "") {
+            setCurrentState(state => [
+                ...state.slice(0, position),
+                {
+                    position: position,
+                    value: value.toLowerCase(),
+                    solveState: Constants.UNSOLVED
+                },
+                ...state.slice(position+1)
+            ]);
+        }
     };
     
     const makeAttempt = (e) => {
         if (attempts < 5 && e.key === "Enter") {
+            const word = currentState.map(state => state.value).join("").toLowerCase();
+    
+            if (!isWordInWordBank(word)) {
+                console.log("not in word bank")
+                return;
+            }
+    
+            const checkedSolution = checkSolution(currentState);
+    
             setAttempts(state => state + 1);
-            setPreviousStates(state => [...state, currentState]);
+            setPreviousStates(state => [...state, checkedSolution]);
             setIsSolved(state => false);
-            setKeysUsed(state => [...state, uniq(currentState.map(letter => letter.value))])
+            setKeysUsed(state => uniq([...state, ...currentState.map(letter => letter.value.toUpperCase())]))
             setCurrentState(state => initialState);
         }
     }
@@ -52,13 +64,12 @@ export default function WordleContainer() {
     }, [currentState, keysUsed]);
     
     return <div>
+        {/*<div className={"wordle-leaderboard"}>leaderboard</div>*/}
         <h1 className={"wordle-header-title"}>Wordle</h1>
         <Wordle previousStates={previousStates}
                 currentState={currentState}
                 updateLetter={updateLetter}
                 attempts={attempts} />
-        <Keyboard keyboardState={{
-            keysUsed
-        }} />
+        <Keyboard keyboardState={currentState} keysUsed={keysUsed}/>
     </div>;
 }

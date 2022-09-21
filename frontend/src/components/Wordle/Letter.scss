@@ -13,10 +13,31 @@
     caret-color: transparent;
     text-transform: uppercase;
     font-weight: 800;
+    cursor: pointer;
 
     &:focus {
       background-color: yellow;
       outline: none;
     }
+  }
+}
+
+.wordle-attempts {
+
+  input {
+    color: white;
+    border: none;
+  }
+
+  .wordle-letter-SOLVED input {
+    background-color: #538d4e;
+  }
+
+  .wordle-letter-WRONG_POSITION input {
+    background-color: #b59f3b;
+  }
+
+  .wordle-letter-UNSOLVED input, .wordle-letter-NOT_PRESENT_IN_SOLUTION input {
+    background-color: #787c7e;
   }
 }

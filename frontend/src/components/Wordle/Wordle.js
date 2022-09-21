@@ -11,7 +11,7 @@ export default function Wordle({previousStates, currentState, updateLetter, atte
             <div key={index}>
                 {states.map((letter, j) =>
                     <Letter key={j}
-                            index={letter.index}
+                            position={letter.position}
                             solveState={letter.solveState}
                             value={letter.value} />)}
             </div>
@@ -33,7 +33,7 @@ export default function Wordle({previousStates, currentState, updateLetter, atte
         <div className={"wordle-current-state"}>
             {currentState.map((letter, index) =>
                 <Letter key={index}
-                        index={letter.index}
+                        position={letter.position}
                         solveState={letter.solveState}
                         value={letter.value}
                         updateLetter={updateLetter}/>
