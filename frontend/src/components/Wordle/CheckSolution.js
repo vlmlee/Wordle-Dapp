@@ -2,7 +2,7 @@ import Constants from "./Constants";
 
 const wordBank = require("./wordBank.json");
 
-const solution = ["r", "i", "d", "e", "0r", "1i", "2d", "3e", "4r"];
+const solution = ["r", "e", "c", "a", "p", "0r", "1e", "2c", "3a", "4p"];
 
 function isWordInWordBank(word) {
     return wordBank.includes(word);
