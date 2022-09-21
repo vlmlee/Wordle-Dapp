@@ -20,7 +20,7 @@
       width: 43px;
       height: 58px;
       line-height: 58px;
-      margin: 6px;
+      margin: 4px 3px;
       border-radius: 4px;
       text-align: center;
     }
@@ -45,8 +45,16 @@
     color: #000;
   }
 
-  .keyboard-key-USED_LETTER {
-    background-color: #888;
+  .keyboard-key-USED_LETTER, .keyboard-key-NOT_PRESENT_IN_SOLUTION {
+    background-color: #787c7e;
+  }
+
+  .keyboard-key-SOLVED {
+    background-color: #538d4e;
+  }
+
+  .keyboard-key-WRONG_POSITION {
+    background-color: #b59f3b;
   }
 }
 

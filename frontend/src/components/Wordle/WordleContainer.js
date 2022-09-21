@@ -37,7 +37,7 @@ export default function WordleContainer() {
     };
     
     const makeAttempt = (e) => {
-        if (attempts < 5 && e.key === "Enter") {
+        if (attempts < 6 && e.key === "Enter") {
             const word = currentState.map(state => state.value).join("").toLowerCase();
     
             if (!isWordInWordBank(word)) {
@@ -70,6 +70,6 @@ export default function WordleContainer() {
                 currentState={currentState}
                 updateLetter={updateLetter}
                 attempts={attempts} />
-        <Keyboard keyboardState={currentState} keysUsed={keysUsed}/>
+        <Keyboard previousStates={previousStates} keyboardState={currentState} keysUsed={keysUsed}/>
     </div>;
 }
