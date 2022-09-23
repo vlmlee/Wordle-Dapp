@@ -11,4 +11,6 @@ func main() {
         log.Fatal(err)
     }
     defer client.close()
+
+    sk :=
 }

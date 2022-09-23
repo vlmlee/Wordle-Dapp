@@ -6,29 +6,43 @@ interface Leaderboard {
     function updateRankings() external;
 }
 
-contract Wordle is ERC20("") {
-    bytes32 public secret;
-    address leaderboard;
-    mapping(address => uint256) public solveCount;
+contract Wordle {
+    address public owner;
+    address public leaderboard;
+    uint256 public accumulator;
+    uint256 public modulus;
+    uint256[] public proofs;
+    uint256 public wordlePuzzleNo = 0; // updated daily
 
-    constructor(bytes32 _secret, address _leaderboard) {
-        secret = _secret;
+    // attempts[wordlePuzzleNo][user] => number of attempts by user at wordle puzzle number
+    mapping(uint256 => mapping(address => uint8)) public attempts;
+    mapping(address => uint256) public userPuzzleSolvedCount;
+
+    constructor(address _leaderboard) {
+        owner = msg.sender;
         leaderboard = _leaderboard;
     }
 
-    function updateSecret(bytes32 newSecret) external {
-        secret = newSecret;
+    function resetAttempts() internal {
+        wordlePuzzleNo++;
     }
 
-    function checkGuess() external {
+    function createNewWordleSecret(uint256 _accumulator, uint256 _modulus, uint256[] memory proofs) external {
+        require(msg.sender == owner);
 
+        accumulator = _accumulator;
+        modulus = _modulus;
+        proofs = _proofs;
+        resetAttempts();
     }
 
-    function updateLeaderboard() internal {
-        Leaderboard(leaderboardAddr).getRankings();
-    }
+    function verifyGuess(uint8 index, uint256 guess) external returns (bool) {
+        uint256 memory proof = proofs[index]; // proofs[index] = G**[Set \ value@index] % modulus
 
-    function getSecret() external returns (bytes32) {
-        return secret;
+        if (proof**guess == accumulator%modulus) {
+            return true;
+        }
+
+        return false;
     }
 }
