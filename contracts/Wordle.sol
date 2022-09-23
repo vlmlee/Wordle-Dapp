@@ -39,7 +39,7 @@ contract Wordle {
     // Checks if the letter is in the solution set.
     // The wordle proofs will always map:
     // [ 1µ, 2µ, 3µ, 4µ, 5µ, ...(3-5µ, depending on the word) ]
-    function verifyGuess(uint256 guess) external returns (bool) {
+    function verifyMembership(uint256 guess) external returns (bool) {
         for (uint8 i = 4; i < proofs.length; i++) {
             uint256 memory proof = proofs[i];
             if (proof**guess == accumulator%modulus) {
