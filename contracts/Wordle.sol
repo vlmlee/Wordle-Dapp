@@ -6,15 +6,21 @@ interface Leaderboard {
     function updateRankings() external;
 }
 
-contract Wordle {
+// The solution for this puzzle can be easily obtained by a computer through brute force since
+// the proofs are embedded inside of this contract. This puzzle is not meant to be impossible to
+// solve through guessing and checking. In fact, you should be able to solve Wordle in less than
+// 6 tries! The kicker is that the solution is encrypted in a RSA accumulator that serves to make
+// this puzzle an interactive zero knowledge proof.
+contract Wordle is Leaderboard {
     address public owner;
     address public leaderboard;
-    uint256 public accumulator;
-    uint256 public modulus;
-    uint256[] public proofs; // [ 1µ, 2µ, 3µ, 4µ, 5µ, ...(2-5µ, depending on the word) ] where µ = letter
     uint256 public wordlePuzzleNo = 0; // updated daily
+    uint256 private accumulator;
+    uint256 private modulus;
+    uint256[] private proofs;
+    uint8 private maxAttempts = 6;
 
-    // attempts[wordlePuzzleNo][user] => number of attempts by user at wordle puzzle number
+    // number of attempts by user at wordle puzzle number = attempts[wordlePuzzleNo][user]
     mapping(uint256 => mapping(address => uint8)) public attempts;
     mapping(address => uint256) public userPuzzleSolvedCount;
 
@@ -39,7 +45,7 @@ contract Wordle {
     // Checks if the letter is in the solution set.
     // The wordle proofs will always map:
     // [ 1µ, 2µ, 3µ, 4µ, 5µ, ...(3-5µ, depending on the word) ]
-    function verifyMembership(uint256 guess) external returns (bool) {
+    function verifyMembership(uint256 guess) view external returns (bool) {
         for (uint8 i = 4; i < proofs.length; i++) {
             uint256 memory proof = proofs[i];
             if (proof**guess == accumulator%modulus) {
@@ -51,7 +57,7 @@ contract Wordle {
     }
 
     // Checks if the letter is in the correct position.
-    function verifyPosition(uint8 index, uint256 guess) external returns (bool) {
+    function verifyPosition(uint8 index, uint256 guess) view external returns (bool) {
         uint256 memory proof = proofs[index]; // proofs[index] = G**[Set \ value@index] % modulus
 
         if (proof**guess == accumulator%modulus) {
