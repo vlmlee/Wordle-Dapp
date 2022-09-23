@@ -9,8 +9,9 @@ interface Leaderboard {
 // The solution for this puzzle can be easily obtained by a computer through brute force since
 // the proofs are embedded inside of this contract. This puzzle is not meant to be impossible to
 // solve through guessing and checking. In fact, you should be able to solve Wordle in less than
-// 6 tries! The kicker is that the solution is encrypted in a RSA accumulator that serves to make
-// this puzzle an interactive zero knowledge proof.
+// 6 tries! It is also not meant to cryptographically secure the secret. This is a demonstration
+// to show that a solution can be encrypted in a RSA accumulator to make this puzzle an interactive
+// zero knowledge proof.
 contract Wordle is Leaderboard {
     address public owner;
     address public leaderboard;
@@ -29,7 +30,7 @@ contract Wordle is Leaderboard {
         leaderboard = _leaderboard;
     }
 
-    function resetAttempts() internal {
+    function resetAllAttempts() internal {
         wordlePuzzleNo++;
     }
 
@@ -39,13 +40,16 @@ contract Wordle is Leaderboard {
         accumulator = _accumulator;
         modulus = _modulus;
         proofs = _proofs;
-        resetAttempts();
+        resetAllAttempts();
     }
 
     // Checks if the letter is in the solution set.
     // The wordle proofs will always map:
     // [ 1µ, 2µ, 3µ, 4µ, 5µ, ...(3-5µ, depending on the word) ]
     function verifyMembership(uint256 guess) view external returns (bool) {
+        require(proofs.length > 0);
+        require(attempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
+
         for (uint8 i = 4; i < proofs.length; i++) {
             uint256 memory proof = proofs[i];
             if (proof**guess == accumulator%modulus) {
@@ -58,6 +62,9 @@ contract Wordle is Leaderboard {
 
     // Checks if the letter is in the correct position.
     function verifyPosition(uint8 index, uint256 guess) view external returns (bool) {
+        require(proofs.length > 0);
+        require(attempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
+
         uint256 memory proof = proofs[index]; // proofs[index] = G**[Set \ value@index] % modulus
 
         if (proof**guess == accumulator%modulus) {
