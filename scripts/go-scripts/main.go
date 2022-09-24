@@ -4,8 +4,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/rand"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 type Witnesses = []int
@@ -29,15 +29,15 @@ func main() {
 	// The first 5 elements encode the letters and their position. The remaining elements encodes the
 	// set membership of the letters for additional validation.
 	secret := Secret{"0f", "1e", "2r", "3r", "4y", "5f", "5e", "5r", "5y"}
-    primes := make([]int, 0, 10)
+	primes := make([]int, 0, 10)
 
-    for value, index := range secret {
-        [index, letter] = strings.split(value)
-        i, err := strconv.Atoi(index)
-        primes[index] = PrimeHashFunction(i, letter)
-    }
+	for value, index := range secret {
+		val = strings.split(value)
+		i, err := strconv.Atoi(val[0])
+		primes[index] = PrimeHashFunction(i, val[1])
+	}
 
-//     witnesses = GenerateWitness()
+	//     witnesses = GenerateWitness()
 }
 
 func PrimeHashFunction(index uint8, letter string) (int, err) {
@@ -59,9 +59,9 @@ func PrimeHashFunction(index uint8, letter string) (int, err) {
 }
 
 func GenerateWitnesses(currentIndex int, nonce int, primes *[]int, modulus int) (witness int) {
-    // var val = ((nonce ** primes[0] % modulus) ** primes[1] % modulus ...)
-    // if nonce^primes[x] > 2^256 - 1, break apart the exponentiation such that you
-    // have: nonce^primes[x] % modulus = (nonce^w % modulus)(nonce^y % modulus)(nonce^z % modulus)
-    // where w+y+z = primes[x] so that nonce^w,y,z < 2^256 - 1 and doesn't overflow.
-    return witness
+	// var val = ((nonce ** primes[0] % modulus) ** primes[1] % modulus ...)
+	// if nonce^primes[x] > 2^256 - 1, break apart the exponentiation such that you
+	// have: nonce^primes[x] % modulus = (nonce^w % modulus)(nonce^y % modulus)(nonce^z % modulus)
+	// where w+y+z = primes[x] so that nonce^w,y,z < 2^256 - 1 and doesn't overflow.
+	return witness
 }
