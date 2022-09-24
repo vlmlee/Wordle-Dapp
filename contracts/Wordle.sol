@@ -7,18 +7,18 @@ interface Leaderboard {
 }
 
 // The solution for this puzzle can be easily obtained by a computer through brute force since
-// the proofs are embedded inside of this contract. This puzzle is not meant to be impossible to
+// the witnesses are embedded inside of this contract. This puzzle is not meant to be impossible to
 // solve through guessing and checking. In fact, you should be able to solve Wordle in less than
 // 6 tries! It is also not meant to cryptographically secure the secret. This is a demonstration
-// to show that a solution can be encrypted in a RSA accumulator to make this puzzle an interactive
-// zero knowledge proof.
+// to show that a solution can be encrypted in a RSA accumulator. This is -not- a zero knowledge
+// proof since the proofs/witnesses are provided below.
 contract Wordle is Leaderboard {
     address public owner;
     address public leaderboard;
     uint256 public wordlePuzzleNo = 0; // updated daily
     uint256 private accumulator;
     uint256 private modulus;
-    uint256[] private proofs;
+    uint256[] private witnesses;
     uint8 private maxAttempts = 6;
 
     struct Attempts {
@@ -35,12 +35,12 @@ contract Wordle is Leaderboard {
         leaderboard = _leaderboard;
     }
 
-    function createNewWordlePuzzle(uint256 _accumulator, uint256 _modulus, uint256[] memory proofs) external {
+    function createNewWordlePuzzle(uint256 _accumulator, uint256 _modulus, uint256[] memory witnesses) external {
         require(msg.sender == owner);
 
         accumulator = _accumulator;
         modulus = _modulus;
-        proofs = _proofs;
+        witnesses = _witnesses;
         resetAllAttempts();
     }
 
@@ -49,15 +49,15 @@ contract Wordle is Leaderboard {
     }
 
     // Checks if the letter is in the solution set.
-    // The wordle proofs will always map:
+    // The wordle witnesses will always map:
     // [ 1µ, 2µ, 3µ, 4µ, 5µ, ...(3-5µ, depending on the word) ]
     function verifyMembership(uint256 guess) view external returns (bool) {
-        require(proofs.length > 0);
+        require(witnesses.length > 0);
         require(userAttempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
 
-        for (uint8 i = 4; i < proofs.length; i++) {
-            uint256 memory proof = proofs[i];
-            if ((proof**guess) % modulus == accumulator%modulus) {
+        for (uint8 i = 4; i < witnesses.length; i++) {
+            uint256 memory witnesses = witnesses[i];
+            if ((witnesses**guess) % modulus == accumulator%modulus) {
                 return true;
             }
         }
@@ -67,12 +67,12 @@ contract Wordle is Leaderboard {
 
     // Checks if the letter is in the correct position.
     function verifyPosition(uint8 index, uint256 guess) view external returns (bool) {
-        require(proofs.length > 0);
+        require(witnesses.length > 0);
         require(userAttempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
 
-        uint256 memory proof = proofs[index]; // proofs[index] = G**[Set \ value@index] % modulus
+        uint256 memory witnesses = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
 
-        if ((proof**guess) % modulus == accumulator%modulus) {
+        if ((witnesses**guess) % modulus == accumulator%modulus) {
             return true;
         }
 
