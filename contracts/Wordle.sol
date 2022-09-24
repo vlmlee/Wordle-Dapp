@@ -21,13 +21,13 @@ contract Wordle is Leaderboard {
     uint256[] private proofs;
     uint8 private maxAttempts = 6;
 
-    struct Attempt {
+    struct Attempts {
         mapping(address => uint8) attempts;
         uint256 length;
     }
 
     // number of attempts by user at wordle puzzle number = attempts[wordlePuzzleNo][user]
-    mapping(uint256 => Attempt) public userAttempts;
+    mapping(uint256 => Attempts) public userAttempts;
     mapping(address => uint256) public userPuzzleSolvedCount;
 
     constructor(address _leaderboard) {
@@ -57,7 +57,7 @@ contract Wordle is Leaderboard {
 
         for (uint8 i = 4; i < proofs.length; i++) {
             uint256 memory proof = proofs[i];
-            if (proof**guess == accumulator%modulus) {
+            if ((proof**guess) % modulus == accumulator%modulus) {
                 return true;
             }
         }
@@ -72,7 +72,7 @@ contract Wordle is Leaderboard {
 
         uint256 memory proof = proofs[index]; // proofs[index] = G**[Set \ value@index] % modulus
 
-        if (proof**guess == accumulator%modulus) {
+        if ((proof**guess) % modulus == accumulator%modulus) {
             return true;
         }
 
