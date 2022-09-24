@@ -21,17 +21,18 @@ contract Wordle is Leaderboard {
     uint256[] private proofs;
     uint8 private maxAttempts = 6;
 
+    struct Attempt {
+        mapping(address => uint8) attempts;
+        uint256 length;
+    }
+
     // number of attempts by user at wordle puzzle number = attempts[wordlePuzzleNo][user]
-    mapping(uint256 => mapping(address => uint8)) public attempts;
+    mapping(uint256 => Attempt) public userAttempts;
     mapping(address => uint256) public userPuzzleSolvedCount;
 
     constructor(address _leaderboard) {
         owner = msg.sender;
         leaderboard = _leaderboard;
-    }
-
-    function resetAllAttempts() internal {
-        wordlePuzzleNo++;
     }
 
     function createNewWordlePuzzle(uint256 _accumulator, uint256 _modulus, uint256[] memory proofs) external {
@@ -43,12 +44,16 @@ contract Wordle is Leaderboard {
         resetAllAttempts();
     }
 
+    function makeAttempt() external {
+
+    }
+
     // Checks if the letter is in the solution set.
     // The wordle proofs will always map:
     // [ 1µ, 2µ, 3µ, 4µ, 5µ, ...(3-5µ, depending on the word) ]
     function verifyMembership(uint256 guess) view external returns (bool) {
         require(proofs.length > 0);
-        require(attempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
+        require(userAttempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
 
         for (uint8 i = 4; i < proofs.length; i++) {
             uint256 memory proof = proofs[i];
@@ -63,7 +68,7 @@ contract Wordle is Leaderboard {
     // Checks if the letter is in the correct position.
     function verifyPosition(uint8 index, uint256 guess) view external returns (bool) {
         require(proofs.length > 0);
-        require(attempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
+        require(userAttempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
 
         uint256 memory proof = proofs[index]; // proofs[index] = G**[Set \ value@index] % modulus
 
@@ -72,5 +77,9 @@ contract Wordle is Leaderboard {
         }
 
         return false;
+    }
+
+    function resetAllAttempts() internal {
+        wordlePuzzleNo++;
     }
 }
