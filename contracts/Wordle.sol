@@ -132,7 +132,7 @@ contract Wordle is Leaderboard {
         uint binLength = log2(n);
         output = new uint8[](binLength);
 
-        for (uint8 i = 0; i < binLength; i++) {
+        for (uint8 i = 0; i <= binLength; i++) {
             output[binLength - i] = (n % 2 == 1) ? 1 : 0;
             n /= 2;
         }
