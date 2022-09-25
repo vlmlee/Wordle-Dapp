@@ -57,7 +57,7 @@ contract Wordle is Leaderboard {
 
         for (uint8 i = 4; i < witnesses.length; i++) {
             uint256 memory witness = witnesses[i];
-            if (fastModExp(witness, guess) == accumulatorMod) {
+            if (fastModExp(witness, guess, modulus) == accumulatorMod) {
                 return true;
             }
         }
@@ -72,7 +72,7 @@ contract Wordle is Leaderboard {
 
         uint256 memory witness = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
 
-        if (fastModExp(witness, guess) == accumulatorMod) {
+        if (fastModExp(witness, guess, modulus) == accumulatorMod) {
             return true;
         }
 
@@ -83,26 +83,18 @@ contract Wordle is Leaderboard {
         wordlePuzzleNo++;
     }
 
-    function fastModExp(uint8 base, uint256 exponent, uint256 modulus) pure internal returns (uint256 result) {
+    function fastModExp(uint8 base, uint256 exponent, uint256 modulus) pure internal returns (uint256) {
         require(exponent < 1024);
         uint8[] binaryArr = intToBinary(exponent);
-        uint256[] baseModExpArr = divideAndConquer(base, binaryArr, modulus);
-        uint256 result = baseModExpArr[0] ? baseModExpArr[0] : 1;
-
-        for (int8 i = 1; i < baseModExpArr.length; i++) {
-            if (baseModExpArr[i] != 0) {
-                result = (result * baseModExpArr[i]) % modulus;
-            }
-        }
-
-        return result;
+        return divideAndConquer(base, binaryArr, modulus);
     }
 
     // Dynamic programming to prevent expensive exponentiation
-    function divideAndConquer(uint256 base, uint8[] memory binaryArr, uint256 modulus) pure internal returns (uint256[]) {
+    function divideAndConquer(uint256 base, uint8[] memory binaryArr, uint256 modulus) pure internal returns (uint256 result) {
         uint256 memory memo = new uint256[](binaryArr.length);
         memo[0] = (base ** 1) % modulus;
 
+        // Create memoized array of base^(powers of 2)
         for (int8 i = 1; i < binaryArr.length; i++) {
             memo[i] = ((memo[i - 1] * memo[i - 1]) % modulus);
         }
@@ -112,16 +104,24 @@ contract Wordle is Leaderboard {
             memo[i] = binaryArr[i] * memo[i];
         }
 
-        return memo;
+        result = memo[0] ? memo[0] : 1;
+
+        // Multiply memoized elements to get base^(∑(elements in memo) = exponent) % modulus
+        for (int8 i = 1; i < memo.length; i++) {
+            if (memo[i] != 0) {
+                result = (result * memo[i]) % modulus;
+            }
+        }
+
+        return result;
     }
 
     // Outputs to binary array in a "little-endian"-like way, i.e. 30 = [0, 1, 1, 1, 1]
-    function intToBinary(uint8 n) pure internal returns (uint8[]) {
+    function intToBinary(uint8 n) pure internal returns (uint8[] output) {
         require(n < 1024);
 
         uint binLength = log2(n);
-
-        uint8[] output = new uint8[](binLength);
+        output = new uint8[](binLength);
 
         for (uint8 i = 0; i < binLength; i++) {
             output[binLength - i] = (n % 2 == 1) ? 1 : 0;
