@@ -26,7 +26,7 @@ contract Wordle is Leaderboard {
         uint256 length;
     }
 
-    // number of attempts by user at wordle puzzle number = attempts[wordlePuzzleNo][user]
+    // number of attempts by user at wordle puzzle number = userAttempts[wordlePuzzleNo][user]
     mapping(uint256 => Attempts) public userAttempts;
     mapping(address => uint256) public userPuzzleSolvedCount;
 
@@ -44,8 +44,15 @@ contract Wordle is Leaderboard {
         resetAllAttempts();
     }
 
-    function makeAttempt() external {
+    function makeAttempt() public payable {
+        require(msg.value >= 100000 gwei); // Calculate some minimum cost to play, $0.25/attempt
 
+
+    }
+
+    function withdraw() public {
+        require(msg.sender == owner);
+        owner.call.value(address(this).balance)("");
     }
 
     // Checks if the letter is in the solution set.
@@ -91,7 +98,7 @@ contract Wordle is Leaderboard {
         return divideAndConquer(base, binaryArr, modulus);
     }
 
-    // Dynamic programming to prevent expensive exponentiation
+    // Dynamic programming to prevent expensive exponentiation and prevent overflow
     function divideAndConquer(uint256 base, uint8[] memory binaryArr, uint256 modulus) pure internal returns (uint256 result) {
         uint256[] memory memo = new uint256[](binaryArr.length);
         memo[0] = (base ** 1) % modulus;
