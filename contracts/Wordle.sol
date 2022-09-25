@@ -100,7 +100,7 @@ contract Wordle is Leaderboard {
     // Dynamic programming to prevent expensive exponentiation
     function divideAndConquer(uint256 base, uint256[] memory binaryArr, uint256 modulus) pure internal returns (uint256[]) {
         uint256 memory memo = new uint8[](binaryArr.length);
-        memo[0] = (base ** 0) % modulus;
+        memo[0] = (base ** 1) % modulus;
 
         for (int8 i = 1; i < binaryArr.length; i++) {
             memo[i] = ((memo[i - 1] * memo[i - 1]) % modulus);
