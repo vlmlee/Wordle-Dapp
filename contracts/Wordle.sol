@@ -90,7 +90,7 @@ contract Wordle is Leaderboard {
 
         for (int8 i = 0; i < baseModExpArr.length; i++) {
             if (baseModExpArr[i] != 0) {
-                result = result * baseModExpArr[i];
+                result = (result * baseModExpArr[i]) % modulus;
             }
         }
 
