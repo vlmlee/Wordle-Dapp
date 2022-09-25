@@ -84,7 +84,6 @@ contract Wordle is Leaderboard {
     }
 
     function fastModExp(uint8 base, uint256 exponent, uint256 modulus) pure internal returns (int result) {
-        require(exponent < 1024);
         uint8[] binaryArr = intToBinary(exponent);
         uint256[] baseModExpArr = divideAndConquer(base, binaryArr, modulus);
 
@@ -106,6 +105,7 @@ contract Wordle is Leaderboard {
             memo[i] = ((memo[i - 1] * memo[i - 1]) % modulus);
         }
 
+        // Zero out powers of two not present in binary array
         for (int8 i = 0; i < binaryArr.length; i++) {
             memo[i] = binaryArr[i] * memo[i];
         }
@@ -115,8 +115,6 @@ contract Wordle is Leaderboard {
 
     // Outputs to binary array in a "little-endian"-like way, i.e. 30 = [0, 1, 1, 1, 1]
     function intToBinary(uint8 n) pure internal returns (uint8[]) {
-        require(n < 1024);
-
         uint binLength = log2(n);
 
         uint8[] output = new uint8[](binLength);
