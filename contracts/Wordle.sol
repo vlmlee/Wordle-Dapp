@@ -117,7 +117,7 @@ contract Wordle is Leaderboard {
     function intToBinary(uint8 n) pure internal returns (uint8[]) {
         require(n < 1024);
 
-        uint8 binLength = log2(n);
+        uint binLength = log2(n);
 
         uint8[] output = new uint8[](binLength);
 
