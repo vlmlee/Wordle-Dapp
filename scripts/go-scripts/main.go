@@ -65,3 +65,11 @@ func GenerateWitnesses(currentIndex int, nonce int, primes *[]int, modulus int) 
 	// where w+y+z = primes[x] so that nonce^w,y,z < 2^256 - 1 and doesn't overflow.
 	return witness
 }
+
+func DivideAndConquer() {
+
+}
+
+func IntToBinary(n int) string {
+    return strconv.FormatInt(n, 2)
+}

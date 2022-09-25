@@ -16,7 +16,7 @@ contract Wordle is Leaderboard {
     address public owner;
     address public leaderboard;
     uint256 public wordlePuzzleNo = 0; // updated daily
-    uint256 private accumulator;
+    uint256 private accumulatorMod;
     uint256 private modulus;
     uint256[] private witnesses;
     uint8 private maxAttempts = 6;
@@ -35,10 +35,10 @@ contract Wordle is Leaderboard {
         leaderboard = _leaderboard;
     }
 
-    function createNewWordlePuzzle(uint256 _accumulator, uint256 _modulus, uint256[] memory witnesses) external {
+    function createNewWordlePuzzle(uint256 _accumulatorMod, uint256 _modulus, uint256[] memory witnesses) external {
         require(msg.sender == owner);
 
-        accumulator = _accumulator;
+        accumulatorMod = _accumulatorMod;
         modulus = _modulus;
         witnesses = _witnesses;
         resetAllAttempts();
@@ -56,8 +56,8 @@ contract Wordle is Leaderboard {
         require(userAttempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
 
         for (uint8 i = 4; i < witnesses.length; i++) {
-            uint256 memory witnesses = witnesses[i];
-            if ((witnesses**guess) % modulus == accumulator%modulus) {
+            uint256 memory witness = witnesses[i];
+            if (fastModExp(witness, guess) == accumulatorMod) {
                 return true;
             }
         }
@@ -70,9 +70,9 @@ contract Wordle is Leaderboard {
         require(witnesses.length > 0);
         require(userAttempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
 
-        uint256 memory witnesses = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
+        uint256 memory witness = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
 
-        if ((witnesses**guess) % modulus == accumulator%modulus) {
+        if (fastModExp(witness, guess) == accumulatorMod) {
             return true;
         }
 
@@ -81,5 +81,29 @@ contract Wordle is Leaderboard {
 
     function resetAllAttempts() internal {
         wordlePuzzleNo++;
+    }
+
+    function fastModExp(uint8 base, uint256 exponent) pure internal returns (int result) {
+
+
+
+        return;
+    }
+
+    function divideAndConquer() pure internal returns (int) {
+        return;
+    }
+
+    function intToBinary(uint8 n) pure internal returns (string) {
+        require(n < 32);
+
+        bytes memory output = new bytes(5);
+
+        for (uint8 i = 0; i < 5; i++) {
+            output[4 - i] = (n % 2 == 1) ? byte("1") : byte("0");
+            n /= 2;
+        }
+
+        return string(output);
     }
 }
