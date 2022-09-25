@@ -83,12 +83,13 @@ contract Wordle is Leaderboard {
         wordlePuzzleNo++;
     }
 
-    function fastModExp(uint8 base, uint256 exponent, uint256 modulus) pure internal returns (int result) {
+    function fastModExp(uint8 base, uint256 exponent, uint256 modulus) pure internal returns (uint256 result) {
         require(exponent < 1024);
         uint8[] binaryArr = intToBinary(exponent);
         uint256[] baseModExpArr = divideAndConquer(base, binaryArr, modulus);
+        uint256 result = baseModExpArr[0] ? baseModExpArr[0] : 1;
 
-        for (int8 i = 0; i < baseModExpArr.length; i++) {
+        for (int8 i = 1; i < baseModExpArr.length; i++) {
             if (baseModExpArr[i] != 0) {
                 result = (result * baseModExpArr[i]) % modulus;
             }
