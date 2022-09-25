@@ -103,7 +103,11 @@ contract Wordle is Leaderboard {
         memo[0] = (base ** 0) % modulus;
 
         for (int8 i = 1; i < binaryArr.length; i++) {
-            memo[i] = binaryArr[i] * ((memo[i - 1] * memo[i - 1]) % modulus);
+            memo[i] = ((memo[i - 1] * memo[i - 1]) % modulus);
+        }
+
+        for (int8 i = 0; i < binaryArr.length; i++) {
+            memo[i] = binaryArr[i] * memo[i];
         }
 
         return memo;
