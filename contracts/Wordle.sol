@@ -50,9 +50,11 @@ contract Wordle is Leaderboard {
 
     // Checks if the letter is in the solution set.
     // The wordle witnesses will always map:
-    // [ 1µ, 2µ, 3µ, 4µ, 5µ, ...(3-5µ, depending on the word) ]
-    function verifyMembership(uint256 guess) view external returns (bool) {
+    // [ 0µ, 1µ, 2µ, 3µ, 4µ, ...(2-5 µ, depending on the word) ]
+    // "index" parameter will always be 5 as guess will have "5" prefixed to the letter.
+    function verifyMembership(uint8 index, uint256 guess) view external returns (bool) {
         require(witnesses.length > 0);
+        require(index == 5);
         require(userAttempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
 
         for (uint8 i = 4; i < witnesses.length; i++) {
@@ -85,13 +87,13 @@ contract Wordle is Leaderboard {
 
     function fastModExp(uint8 base, uint256 exponent, uint256 modulus) pure internal returns (uint256) {
         require(exponent < 1024);
-        uint8[] binaryArr = intToBinary(exponent);
+        uint8[] memory binaryArr = intToBinary(exponent);
         return divideAndConquer(base, binaryArr, modulus);
     }
 
     // Dynamic programming to prevent expensive exponentiation
     function divideAndConquer(uint256 base, uint8[] memory binaryArr, uint256 modulus) pure internal returns (uint256 result) {
-        uint256 memory memo = new uint256[](binaryArr.length);
+        uint256[] memory memo = new uint256[](binaryArr.length);
         memo[0] = (base ** 1) % modulus;
 
         // Create memoized array of base^(powers of 2)
