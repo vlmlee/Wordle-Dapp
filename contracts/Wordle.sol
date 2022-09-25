@@ -83,27 +83,42 @@ contract Wordle is Leaderboard {
         wordlePuzzleNo++;
     }
 
-    function fastModExp(uint8 base, uint256 exponent) pure internal returns (int result) {
+    function fastModExp(uint8 base, uint256 exponent, uint256 modulus) pure internal returns (int result) {
+        require(exponent < 1024);
+        uint256[] binaryArr = intToBinary(exponent);
+        uint256[] baseModExpArr = divideAndConquer(base, binaryArr, modulus);
 
+        for (int8 i = 0; i < baseModExpArr.length; i++) {
+            if (baseModExpArr[i] != 0) {
+                result = result * baseModExpArr[i];
+            }
+        }
 
-
-        return;
+        return result;
     }
 
-    function divideAndConquer() pure internal returns (int) {
-        return;
+    // Dynamic programming to prevent expensive exponentiation
+    function divideAndConquer(uint256 base, uint256[] memory binaryArr, uint256 modulus) pure internal returns (uint256[]) {
+        uint256 memory memo = new uint8[](binaryArr.length);
+        memo[0] = (base ** 0) % modulus;
+
+        for (int8 i = 1; i < binaryArr.length; i++) {
+            memo[i] = binaryArr[i] * ((memo[i - 1] * memo[i - 1]) % modulus);
+        }
+
+        return memo;
     }
 
-    function intToBinary(uint8 n) pure internal returns (string) {
-        require(n < 32);
+    function intToBinary(uint8 n) pure internal returns (uint8[]) {
+        require(n < 1024);
 
-        bytes memory output = new bytes(5);
+        uint8[] output = new uint8[](10);
 
-        for (uint8 i = 0; i < 5; i++) {
-            output[4 - i] = (n % 2 == 1) ? byte("1") : byte("0");
+        for (uint8 i = 0; i < 10; i++) {
+            output[9 - i] = (n % 2 == 1) ? 1 : 0;
             n /= 2;
         }
 
-        return string(output);
+        return output;
     }
 }
