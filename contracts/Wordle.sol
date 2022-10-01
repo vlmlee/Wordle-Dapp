@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.9;
+pragma solidity ^0.8.0;
 
-interface Leaderboard {
-    function getRankings() external view returns ();
-    function updateRankings() external;
-}
+//interface Leaderboard {
+//    function getRankings() external view returns ();
+//    function updateRankings() external;
+//}
 
 // The solution for this puzzle can be easily obtained by a computer through brute force since
 // the witnesses are embedded inside of this contract. This puzzle is not meant to be impossible to
@@ -12,7 +12,7 @@ interface Leaderboard {
 // 6 tries! It is also not meant to cryptographically secure the secret. This is a demonstration
 // to show that a solution can be encrypted in a RSA accumulator. This is -not- a zero knowledge
 // proof since the proofs/witnesses are provided below.
-contract Wordle is Leaderboard {
+contract Wordle {
     address public owner;
     address public leaderboard;
     uint256 public wordlePuzzleNo = 0; // updated daily
@@ -35,7 +35,7 @@ contract Wordle is Leaderboard {
         leaderboard = _leaderboard;
     }
 
-    function createNewWordlePuzzle(uint256 _accumulatorMod, uint256 _modulus, uint256[] memory witnesses) external {
+    function createNewWordlePuzzle(uint256 _accumulatorMod, uint256 _modulus, uint256[] memory _witnesses) external {
         require(msg.sender == owner);
 
         accumulatorMod = _accumulatorMod;
@@ -52,7 +52,8 @@ contract Wordle is Leaderboard {
 
     function withdraw() public {
         require(msg.sender == owner);
-        owner.call.value(address(this).balance)("");
+        (bool success,) = owner.call{ value: address(this).balance}("");
+        require(success, "Transfer failed");
     }
 
     // Checks if the letter is in the solution set.
@@ -62,10 +63,10 @@ contract Wordle is Leaderboard {
     function verifyMembership(uint8 index, uint256 guess) view external returns (bool) {
         require(witnesses.length > 0);
         require(index == 5);
-        require(userAttempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
+        require(userAttempts[wordlePuzzleNo].attempts[msg.sender] <= maxAttempts);
 
         for (uint8 i = 4; i < witnesses.length; i++) {
-            uint256 memory witness = witnesses[i];
+            uint256 witness = witnesses[i];
             if (fastModExp(witness, guess, modulus) == accumulatorMod) {
                 return true;
             }
@@ -77,9 +78,9 @@ contract Wordle is Leaderboard {
     // Checks if the letter is in the correct position.
     function verifyPosition(uint8 index, uint256 guess) view external returns (bool) {
         require(witnesses.length > 0);
-        require(userAttempts[wordlePuzzleNo][msg.sender] <= maxAttempts);
+        require(userAttempts[wordlePuzzleNo].attempts[msg.sender] <= maxAttempts);
 
-        uint256 memory witness = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
+        uint256 witness = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
 
         if (fastModExp(witness, guess, modulus) == accumulatorMod) {
             return true;
@@ -92,33 +93,33 @@ contract Wordle is Leaderboard {
         wordlePuzzleNo++;
     }
 
-    function fastModExp(uint8 base, uint256 exponent, uint256 modulus) pure internal returns (uint256) {
+    function fastModExp(uint256 base, uint256 exponent, uint256 _modulus) pure internal returns (uint256) {
         require(exponent < 1024);
         uint8[] memory binaryArr = intToBinary(exponent);
-        return divideAndConquer(base, binaryArr, modulus);
+        return divideAndConquer(base, binaryArr, _modulus);
     }
 
     // Dynamic programming to prevent expensive exponentiation and prevent overflow
-    function divideAndConquer(uint256 base, uint8[] memory binaryArr, uint256 modulus) pure internal returns (uint256 result) {
+    function divideAndConquer(uint256 base, uint8[] memory binaryArr, uint256 _modulus) pure internal returns (uint256 result) {
         uint256[] memory memo = new uint256[](binaryArr.length);
-        memo[0] = (base ** 1) % modulus;
+        memo[0] = (base ** 1) % _modulus;
 
         // Create memoized array of base^(powers of 2)
-        for (int8 i = 1; i < binaryArr.length; i++) {
-            memo[i] = ((memo[i - 1] * memo[i - 1]) % modulus);
+        for (uint256 i = 1; i < binaryArr.length; i++) {
+            memo[i] = ((memo[i - 1] * memo[i - 1]) % _modulus);
         }
 
         // Zero out powers of two not present in binary array
-        for (int8 i = 0; i < binaryArr.length; i++) {
+        for (uint256 i = 0; i < binaryArr.length; i++) {
             memo[i] = binaryArr[i] * memo[i];
         }
 
-        result = memo[0] ? memo[0] : 1;
+        result = memo[0] != 0 ? memo[0] : 1;
 
         // Multiply memoized elements to get base^(∑(elements in memo) = exponent) % modulus
-        for (int8 i = 1; i < memo.length; i++) {
+        for (uint256 i = 1; i < memo.length; i++) {
             if (memo[i] != 0) {
-                result = (result * memo[i]) % modulus;
+                result = (result * memo[i]) % _modulus;
             }
         }
 
@@ -126,7 +127,7 @@ contract Wordle is Leaderboard {
     }
 
     // Outputs to binary array in a "little-endian"-like way, i.e. 30 = [0, 1, 1, 1, 1]
-    function intToBinary(uint8 n) pure internal returns (uint8[] output) {
+    function intToBinary(uint256 n) pure internal returns (uint8[] memory output) {
         require(n < 1024);
 
         uint binLength = log2(n);
@@ -141,7 +142,7 @@ contract Wordle is Leaderboard {
     }
 
     // Should use an external library for security.
-    function log2(uint x) returns (uint y) {
+    function log2(uint x) internal pure returns (uint y) {
         assembly {
             let arg := x
             x := sub(x,1)
