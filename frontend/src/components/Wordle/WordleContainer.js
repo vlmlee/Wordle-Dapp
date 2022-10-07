@@ -21,6 +21,25 @@ export default function WordleContainer() {
     const [keysUsed, setKeysUsed] = useState([]);
     const [isSolved, setIsSolved] = useState(false);
     const [currentState, setCurrentState] = useState(initialState);
+
+    const [account, setAccount] = useState(null);
+    const [contract, setContract] = useState({});
+
+    let window = _window;
+
+    const web3Handler = async () => {
+        const accounts = await _window.ethereum.request({ method: "eth_requestAccounts" });
+        setAccount(accounts[0]);
+
+        const provider = new ethers.providers.Web3Provider(_window.ethereum);
+        const signer = provider.getSigner();
+        await loadContract(signer);
+    };
+
+    const loadContract = async (signer) => {
+        const _contract = new ethers.Contract(LeaderboardAddress.address, LeaderboardAbi.abi, signer);
+        setContract(_contract);
+    };
     
     const updateLetter = (position, value) => {
         if (value !== "") {

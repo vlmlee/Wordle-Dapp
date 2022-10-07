@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 
-//interface Leaderboard {
-//    function getRankings() external view returns ();
-//    function updateRankings() external;
-//}
+import "./WordleLeaderboard.sol";
 
 // The solution for this puzzle can be easily obtained by a computer through brute force since
 // the witnesses are embedded inside of this contract. This puzzle is not meant to be impossible to
@@ -14,7 +11,7 @@ pragma solidity ^0.8.0;
 // proof since the proofs/witnesses are provided below.
 contract Wordle {
     address public owner;
-    address public leaderboard;
+    WordleLeaderboard public leaderboard;
     uint256 public wordlePuzzleNo = 0; // updated daily
     uint256 private accumulatorMod;
     uint256 private modulus;
@@ -30,9 +27,12 @@ contract Wordle {
     mapping(uint256 => Attempts) public userAttempts;
     mapping(address => uint256) public userPuzzleSolvedCount;
 
-    constructor(address _leaderboard) {
+    constructor() {
         owner = msg.sender;
-        leaderboard = _leaderboard;
+    }
+
+    function setLeaderboardAddress(uint256 _endTime) external payable {
+        leaderboard = new WordleLeaderboard(bytes32("Wordle Leaderboard"), _endTime);
     }
 
     function createNewWordlePuzzle(uint256 _accumulatorMod, uint256 _modulus, uint256[] memory _witnesses) external {
@@ -130,7 +130,7 @@ contract Wordle {
     function intToBinary(uint256 n) pure internal returns (uint8[] memory output) {
         require(n < 1024);
 
-        uint binLength = log2(n);
+        uint binLength = log2ceil(n);
         output = new uint8[](binLength);
 
         for (uint8 i = 0; i <= binLength; i++) {
@@ -142,7 +142,7 @@ contract Wordle {
     }
 
     // Should use an external library for security.
-    function log2(uint x) internal pure returns (uint y) {
+    function log2ceil(uint x) public pure returns (uint y) {
         assembly {
             let arg := x
             x := sub(x,1)
