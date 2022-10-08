@@ -3,6 +3,10 @@ pragma solidity ^0.8.0;
 
 import "./WordleLeaderboard.sol";
 
+interface ILeaderboard {
+
+}
+
 // The solution for this puzzle can be easily obtained by a computer through brute force since
 // the witnesses are embedded inside of this contract. This puzzle is not meant to be impossible to
 // solve through guessing and checking. In fact, you should be able to solve Wordle in less than
@@ -17,11 +21,12 @@ contract Wordle {
     uint256[] public witnesses;
     uint8 public maxAttempts = 6;
     uint256 public fee = 700000 gwei;
-    WordleLeaderboard public leaderboard;
+    ILeaderboard public leaderboard;
 
     event WithdrawalSuccessful(uint256 _value);
-    event PlayerMadeAttempt(address _player, uint8 attemptNumber, uint256 _wordlePuzzleNo);
-    event PlayerSolvedWordle(address _player);
+    event PlayerMadeAttempt(address indexed _player, uint8 attemptNumber, uint256 _wordlePuzzleNo);
+    event PlayerSolvedWordle(address indexed _player);
+    event LeaderboardSuccessfullyFunded(address indexed _leaderAddr, uint256 _amount);
 
     mapping(uint => mapping(address => uint8)) public playerAttempts;
     uint256 public playerAttemptsLength;
@@ -37,6 +42,8 @@ contract Wordle {
     error PlayerHasMadeTooManyAttempts(string _message);
     error WordleIsNotReady();
     error PlayerHasAlreadySolvedWordle();
+    error ContractHasNoBalance();
+    error ContractDoesNotHaveEnoughFunds(uint256 _value);
 
     modifier MustBeOwner() {
         if (msg.sender != owner) revert PlayerIsNotOwner(msg.sender);
@@ -54,8 +61,19 @@ contract Wordle {
 
     receive() external payable {}
 
-    function setLeaderboardAddress(uint256 _endTime) external payable {
-        leaderboard = new WordleLeaderboard(bytes32("Wordle Leaderboard"), _endTime);
+    function setLeaderboardAddress(address _addr) external MustBeOwner payable {
+        leaderboard = ILeaderboard(_addr);
+    }
+
+    function fundLeaderboard(uint256 _amount) external MustBeOwner payable {
+        if (!((payable(address(this)).balance) > 0)) revert ContractHasNoBalance();
+        if (_amount > (payable(address(this)).balance)) revert ContractDoesNotHaveEnoughFunds(_amount);
+
+        (bool success,) = payable(address(leaderboard)).call{ value: _amount}("");
+
+        if (success) {
+            emit LeaderboardSuccessfullyFunded(address(leaderboard), _amount);
+        }
     }
 
     function createNewWordlePuzzle(uint256 _accumulatorMod, uint256 _modulus, uint256[] calldata _witnesses) external MustBeOwner {
@@ -136,7 +154,7 @@ contract Wordle {
         return false;
     }
 
-    function checkIfSolved(bool[2][] memory _answer) public view returns (bool isAllTrue) {
+    function checkIfSolved(bool[2][] memory _answer) public pure returns (bool isAllTrue) {
         isAllTrue = true;
 
         for (uint8 i = 0; i < _answer.length; i++) {

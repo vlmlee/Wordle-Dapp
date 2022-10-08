@@ -36,6 +36,24 @@ describe("Wordle contract", function () {
         });
     });
 
+    describe("Withdrawing funds", async function () {
+       it("should be able to withdraw funds if you are the owner", async function () {
+
+       });
+
+       it("should not allow anyone other than the owner to withdraw funds", async function () {
+
+       });
+
+       it("should revert if the contract has no funds in its balance", async function () {
+
+       });
+
+       it("should emit WithdrawalSuccessful event when the owner successfully withdraws the balance", async function () {
+
+       });
+    });
+
     describe("Leaderboard", async function () {
        it("should set a leaderboard", async function () {
 
@@ -52,6 +70,10 @@ describe("Wordle contract", function () {
         });
 
         it("should reset the attempts stored in the contract", async function () {
+
+        });
+
+        it("should update the wordle puzzle number", async function () {
 
         });
     });
