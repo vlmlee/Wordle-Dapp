@@ -164,6 +164,9 @@ contract Wordle {
                     break;
                 }
             }
+            if (!isAllTrue) {
+                break;
+            }
         }
     }
 
