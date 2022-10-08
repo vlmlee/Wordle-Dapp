@@ -159,8 +159,10 @@ contract Wordle {
 
         for (uint8 i = 0; i < _answer.length; i++) {
             for (uint8 j = 0; j < _answer[i].length; j++) {
-                if (!_answer[i][j]) isAllTrue = false;
-                break;
+                if (!_answer[i][j]) {
+                    isAllTrue = false;
+                    break;
+                }
             }
         }
     }
