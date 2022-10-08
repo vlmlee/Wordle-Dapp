@@ -11,21 +11,38 @@ import "./WordleLeaderboard.sol";
 // proof since the proofs/witnesses are provided below.
 contract Wordle {
     address public owner;
-    WordleLeaderboard public leaderboard;
     uint256 public wordlePuzzleNo = 0; // updated daily
-    uint256 private accumulatorMod;
-    uint256 private modulus;
-    uint256[] private witnesses;
-    uint8 private maxAttempts = 6;
+    uint256 public accumulatorMod;
+    uint256 public modulus;
+    uint256[] public witnesses;
+    uint8 public maxAttempts = 6;
+    uint256 public fee = 700000 gwei;
+    WordleLeaderboard public leaderboard;
 
-    struct Attempts {
-        mapping(address => uint8) attempts;
-        uint256 length;
+    event WithdrawalSuccessful(uint256 _value);
+
+    mapping(uint => mapping(address => uint8)) public userAttempts;
+    uint256 public userAttemptsLength;
+
+    mapping(address => uint256) public userPuzzleSolvedCount;
+    uint256 public userPuzzleSolvedCountLength;
+
+    error UserIsNotOwner(address _user);
+    error PlayerMustPayFeeToPlay(uint256 _fee);
+    error WithdrawalFailed();
+    error WithdrawalMustBeNonZero();
+    error PlayerHasMadeTooManyAttempts(string message);
+    error PuzzleIsNotReady();
+
+    modifier MustBeOwner() {
+        if (msg.sender != owner) revert UserIsNotOwner(msg.sender);
+        _;
     }
 
-    // number of attempts by user at wordle puzzle number = userAttempts[wordlePuzzleNo][user]
-    mapping(uint256 => Attempts) public userAttempts;
-    mapping(address => uint256) public userPuzzleSolvedCount;
+    modifier PuzzleMustBeReady() {
+        if (accumulatorMod == 0 || modulus == 0 || witnesses.length == 0) revert PuzzleIsNotReady();
+        _;
+    }
 
     constructor() {
         owner = msg.sender;
@@ -35,37 +52,45 @@ contract Wordle {
         leaderboard = new WordleLeaderboard(bytes32("Wordle Leaderboard"), _endTime);
     }
 
-    function createNewWordlePuzzle(uint256 _accumulatorMod, uint256 _modulus, uint256[] memory _witnesses) external {
-        require(msg.sender == owner);
-
+    function createNewWordlePuzzle(uint256 _accumulatorMod, uint256 _modulus, uint256[] calldata _witnesses) external MustBeOwner {
         accumulatorMod = _accumulatorMod;
         modulus = _modulus;
         witnesses = _witnesses;
         resetAllAttempts();
     }
 
-    function makeAttempt() public payable {
-        require(msg.value >= 100000 gwei); // Calculate some minimum cost to play, $0.25/attempt
+    function makeAttempt(uint256[] guesses) public PuzzleMustBeReady payable returns (bool[2][] memory answer) {
+        if (msg.value < fee) revert PlayerMustPayFeeToPlay(fee);
+        if (userAttempts[wordlePuzzleNo][msg.sender] > maxAttempts)
+            revert PlayerHasMadeTooManyAttempts("Player has maxed out their attempts for this puzzle. Wait for the next Wordle to play again.");
 
+        answer = new bool[2][](guesses.length);
 
+        for (uint256 i = 0; i < guesses.length; i++) {
+            bool isMember = verifyMembership(guesses[i]);
+            bool isInTheCorrectPosition = false;
+
+            if (isMember) {
+                isInTheCorrectPosition = verifyPosition(i, guesses[i]);
+            }
+
+            answer[i] = [isMember, isInTheCorrectPosition];
+        }
     }
 
-    function withdraw() public {
-        require(msg.sender == owner);
-        (bool success,) = owner.call{ value: address(this).balance}("");
-        require(success, "Transfer failed");
+    function withdraw() public MustBeOwner {
+        uint256 _value = payable(address(this)).balance;
+        if (!(_value > 0)) revert WithdrawalMustBeNonZero(_value);
+        (bool success,) = owner.call{ value: _value }("");
+        if (!success) revert WithdrawalFailed();
+        emit WithdrawalSuccessful(_value);
     }
 
     // Checks if the letter is in the solution set.
     // The wordle witnesses will always map:
     // [ 0µ, 1µ, 2µ, 3µ, 4µ, ...(2-5 µ, depending on the word) ]
-    // "index" parameter will always be 5 as guess will have "5" prefixed to the letter.
-    function verifyMembership(uint8 index, uint256 guess) view external returns (bool) {
-        require(witnesses.length > 0);
-        require(index == 5);
-        require(userAttempts[wordlePuzzleNo].attempts[msg.sender] <= maxAttempts);
-
-        for (uint8 i = 4; i < witnesses.length; i++) {
+    function verifyMembership(uint256 guess) external view PuzzleMustBeReady returns (bool) {
+        for (uint8 i = 5; i < witnesses.length; i++) {
             uint256 witness = witnesses[i];
             if (fastModExp(witness, guess, modulus) == accumulatorMod) {
                 return true;
@@ -76,10 +101,7 @@ contract Wordle {
     }
 
     // Checks if the letter is in the correct position.
-    function verifyPosition(uint8 index, uint256 guess) view external returns (bool) {
-        require(witnesses.length > 0);
-        require(userAttempts[wordlePuzzleNo].attempts[msg.sender] <= maxAttempts);
-
+    function verifyPosition(uint8 index, uint256 guess) external view PuzzleMustBeReady returns (bool) {
         uint256 witness = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
 
         if (fastModExp(witness, guess, modulus) == accumulatorMod) {
@@ -89,18 +111,18 @@ contract Wordle {
         return false;
     }
 
-    function resetAllAttempts() internal {
+    function resetAllAttempts() public MustBeOwner {
+        delete userAttempts[wordlePuzzleNo];
         wordlePuzzleNo++;
     }
 
-    function fastModExp(uint256 base, uint256 exponent, uint256 _modulus) pure internal returns (uint256) {
-        require(exponent < 1024);
+    function fastModExp(uint256 base, uint256 exponent, uint256 _modulus) pure public returns (uint256) {
         uint8[] memory binaryArr = intToBinary(exponent);
         return divideAndConquer(base, binaryArr, _modulus);
     }
 
     // Dynamic programming to prevent expensive exponentiation and prevent overflow
-    function divideAndConquer(uint256 base, uint8[] memory binaryArr, uint256 _modulus) pure internal returns (uint256 result) {
+    function divideAndConquer(uint256 base, uint8[] memory binaryArr, uint256 _modulus) pure public returns (uint256 result) {
         uint256[] memory memo = new uint256[](binaryArr.length);
         memo[0] = (base ** 1) % _modulus;
 
@@ -127,7 +149,7 @@ contract Wordle {
     }
 
     // Outputs to binary array in a "little-endian"-like way, i.e. 30 = [0, 1, 1, 1, 1]
-    function intToBinary(uint256 n) pure internal returns (uint8[] memory output) {
+    function intToBinary(uint256 n) pure public returns (uint8[] memory output) {
         require(n < 1024);
 
         uint binLength = log2ceil(n);

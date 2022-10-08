@@ -8,6 +8,4 @@ contract WordleLeaderboard is Leaderboard {
     constructor(bytes32 _name, uint256 _endTime) Leaderboard(_name, _endTime) {
 
     }
-
-
 }

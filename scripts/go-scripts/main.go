@@ -6,20 +6,25 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"os"
 )
 
 type Witnesses = []int
 type Secret = []string
 
+static localNetwork := "http://localhost:8575"
+static testNetworkLive := "https://sepolia.infura.io/v3/" + os.Getenv("INFURA_API_KEY")
+static testNetworkChainId := 11155111
+
 func main() {
-	client, err := ethclient.Dial("http://localhost:8575")
+	client, err := ethclient.Dial(localNetwork)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer client.close()
 
-	// Create Wordle puzzle
-	generator := rand.Intn(255) // Nonce between 0 and 255
+    // 	Create Wordle puzzle
+	generator := 121 // Nonce between 0 and 255
 	var accumulator int
 	var modulus int
 
