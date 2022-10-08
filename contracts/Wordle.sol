@@ -20,33 +20,39 @@ contract Wordle {
     WordleLeaderboard public leaderboard;
 
     event WithdrawalSuccessful(uint256 _value);
+    event PlayerMadeAttempt(address _player, uint8 attemptNumber, uint256 _wordlePuzzleNo);
+    event PlayerSolvedWordle(address _player);
 
-    mapping(uint => mapping(address => uint8)) public userAttempts;
-    uint256 public userAttemptsLength;
+    mapping(uint => mapping(address => uint8)) public playerAttempts;
+    uint256 public playerAttemptsLength;
 
-    mapping(address => uint256) public userPuzzleSolvedCount;
-    uint256 public userPuzzleSolvedCountLength;
+    mapping(address => uint256) public playerPuzzleSolvedCount;
+    mapping(address => mapping(uint256 => bool)) public playerPuzzleNumberSolved;
+    uint256 public playerPuzzleSolvedCountLength;
 
-    error UserIsNotOwner(address _user);
+    error PlayerIsNotOwner(address _player);
     error PlayerMustPayFeeToPlay(uint256 _fee);
     error WithdrawalFailed();
     error WithdrawalMustBeNonZero(uint256 _value);
-    error PlayerHasMadeTooManyAttempts(string message);
-    error PuzzleIsNotReady();
+    error PlayerHasMadeTooManyAttempts(string _message);
+    error WordleIsNotReady();
+    error PlayerHasAlreadySolvedWordle();
 
     modifier MustBeOwner() {
-        if (msg.sender != owner) revert UserIsNotOwner(msg.sender);
+        if (msg.sender != owner) revert PlayerIsNotOwner(msg.sender);
         _;
     }
 
-    modifier PuzzleMustBeReady() {
-        if (accumulatorMod == 0 || modulus == 0 || witnesses.length == 0) revert PuzzleIsNotReady();
+    modifier WordleMustBeReady() {
+        if (accumulatorMod == 0 || modulus == 0 || witnesses.length == 0) revert WordleIsNotReady();
         _;
     }
 
-    constructor() {
+    constructor() payable {
         owner = msg.sender;
     }
+
+    receive() external payable {}
 
     function setLeaderboardAddress(uint256 _endTime) external payable {
         leaderboard = new WordleLeaderboard(bytes32("Wordle Leaderboard"), _endTime);
@@ -59,10 +65,13 @@ contract Wordle {
         resetAllAttempts();
     }
 
-    function makeAttempt(uint256[] calldata guesses) public PuzzleMustBeReady payable returns (bool[2][] memory answer) {
+    function makeAttempt(uint256[] calldata guesses) public WordleMustBeReady payable returns (bool[2][] memory answer) {
         if (msg.value < fee) revert PlayerMustPayFeeToPlay(fee);
-        if (userAttempts[wordlePuzzleNo][msg.sender] > maxAttempts)
+        if (playerAttempts[wordlePuzzleNo][msg.sender] > maxAttempts)
             revert PlayerHasMadeTooManyAttempts("Player has maxed out their attempts for this puzzle. Wait for the next Wordle to play again.");
+
+        bool playerHasSolvedPuzzle = playerPuzzleNumberSolved[msg.sender][wordlePuzzleNo];
+        if (playerHasSolvedPuzzle == true) revert PlayerHasAlreadySolvedWordle();
 
         answer = new bool[2][](guesses.length);
 
@@ -76,6 +85,22 @@ contract Wordle {
 
             answer[i] = [isMember, isInTheCorrectPosition];
         }
+
+        playerAttempts[wordlePuzzleNo][msg.sender]++;
+        emit PlayerMadeAttempt(msg.sender, playerAttempts[wordlePuzzleNo][msg.sender], wordlePuzzleNo);
+
+        bool isSolved = checkIfSolved(answer);
+
+        if (isSolved) {
+            if (playerPuzzleSolvedCount[msg.sender] == 0) playerPuzzleSolvedCountLength++;
+            playerPuzzleSolvedCount[msg.sender]++;
+            playerPuzzleNumberSolved[msg.sender][wordlePuzzleNo] = true;
+            emit PlayerSolvedWordle(msg.sender);
+        }
+    }
+
+    function resetAllAttempts() public MustBeOwner {
+        wordlePuzzleNo++; // zeros out previous mapping when value is mutated
     }
 
     function withdraw() public MustBeOwner {
@@ -89,7 +114,7 @@ contract Wordle {
     // Checks if the letter is in the solution set.
     // The wordle witnesses will always map:
     // [ 0µ, 1µ, 2µ, 3µ, 4µ, ...(2-5 µ, depending on the word) ]
-    function verifyMembership(uint256 guess) public view PuzzleMustBeReady returns (bool) {
+    function verifyMembership(uint256 guess) public view WordleMustBeReady returns (bool) {
         for (uint8 i = 5; i < witnesses.length; i++) {
             uint256 witness = witnesses[i];
             if (fastModExp(witness, guess, modulus) == accumulatorMod) {
@@ -101,7 +126,7 @@ contract Wordle {
     }
 
     // Checks if the letter is in the correct position.
-    function verifyPosition(uint8 index, uint256 guess) public view PuzzleMustBeReady returns (bool) {
+    function verifyPosition(uint8 index, uint256 guess) public view WordleMustBeReady returns (bool) {
         uint256 witness = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
 
         if (fastModExp(witness, guess, modulus) == accumulatorMod) {
@@ -111,8 +136,14 @@ contract Wordle {
         return false;
     }
 
-    function resetAllAttempts() public MustBeOwner {
-        wordlePuzzleNo++; // zeros out previous mapping when value is mutated
+    function checkIfSolved(bool[2][] memory _answer) public view returns (bool isAllTrue) {
+        isAllTrue = true;
+
+        for (uint8 i = 0; i < _answer.length; i++) {
+            for (uint8 j = 0; j < _answer[i].length; j++) {
+                if (!_answer[i][j]) isAllTrue = false;
+            }
+        }
     }
 
     function fastModExp(uint256 base, uint256 exponent, uint256 _modulus) pure public returns (uint256) {

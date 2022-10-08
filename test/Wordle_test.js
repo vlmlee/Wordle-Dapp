@@ -47,14 +47,36 @@ describe("Wordle contract", function () {
     });
 
     describe("Create new Wordle puzzle", async function () {
-        it("should have new acculumator, modulus, and witnesses", async function () {
+        it("should be able to create a new puzzle with a new acculumator, modulus, and witnesses", async function () {
 
         });
 
-        it("should reset attempts stored in the contract")
+        it("should reset the attempts stored in the contract", async function () {
+
+        });
     });
 
+    describe("Attempts on a Wordle puzzle", async function () {
+        it("should verify the membership of a guess in the solution", async function () {
 
+        });
+
+        it("should verify the position of a guess in the solution", async function () {
+
+        });
+
+        it("should verify that the guess is not in the solution", async function () {
+
+        });
+
+        it("should verify that the guess is in the solution but in the wrong position", async function () {
+
+        });
+    });
+
+    describe("Solving a Wordle puzzle", async function () {
+
+    });
 
     describe("Internal functions", async function () {
         describe("Fast Exp Mod function",  async function () {
