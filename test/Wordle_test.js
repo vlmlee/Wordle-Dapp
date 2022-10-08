@@ -62,6 +62,10 @@ describe("Wordle contract", function () {
        it("should be able to add rankings into the leaderboard", async function () {
 
        });
+
+       it("should allow the contract to fund the leaderboard", async function () {
+
+       });
     });
 
     describe("Create new Wordle puzzle", async function () {
@@ -73,7 +77,11 @@ describe("Wordle contract", function () {
 
         });
 
-        it("should update the wordle puzzle number", async function () {
+        it("should update the Wordle puzzle number", async function () {
+
+        });
+
+        it("should only allow the contract owner to create a new Wordle", async function () {
 
         });
     });
@@ -94,15 +102,65 @@ describe("Wordle contract", function () {
         it("should verify that the guess is in the solution but in the wrong position", async function () {
 
         });
+
+        it("should emit PlayerMadeAttempt even when a player completes an attempt", async function () {
+
+        });
+
+        it("should increase a player's attempt count after they complete an attempt", async function () {
+
+        });
+
+        it("should return an array of answers pertaining to each guess supplied", async function () {
+
+        });
+
+        it("should return a boolean value of whether the Wordle was solved or not", async function () {
+
+        });
     });
 
     describe("Solving a Wordle puzzle", async function () {
+        it("should be able to verify that a Wordle was solved by a player", async function () {
 
+        });
+
+        it("should emit PlayerSolvedWordle event when the player has solved the Wordle", async function () {
+
+        });
+
+        it("should revert if a player has already solved the Wordle", async function () {
+
+        });
+
+        it("should show the number of Wordles solved by a player has increased", async function () {
+
+        });
     });
 
-    describe("Internal functions", async function () {
-        describe("Fast Exp Mod function",  async function () {
-            it("should give the correct result for expmod", async function () {
+    describe("Helper functions", async function () {
+       describe("CheckIfSolved", async function () {
+           it("should return true if all elements in the array of 2 element arrays are true", async function () {
+
+           });
+
+           it("should return false if at least one element is false", async function () {
+
+           });
+       });
+
+       describe("VerifyMembership", async function () {
+
+       });
+
+       describe("VerifyPosition", async function () {
+
+       });
+    });
+
+    describe("Math functions", async function () {
+        describe("Fast Exp Mod function / divide and conquer",  async function () {
+            it("should give the correct result for exponentiation modulo of large numbers", async function () {
                 const {instance} = await loadFixture(deployWordleFixture);
 
                 const testSet = [
@@ -136,19 +194,19 @@ describe("Wordle contract", function () {
         });
 
         describe("IntToBinary function", async function () {
-            it("should give the correct result", async function () {
+            it("should turn an integer into a small endian binary array representation", async function () {
                 const {instance} = await loadFixture(deployWordleFixture);
 
                 const testSet = [
-                    3
+                    30
                 ];
 
                 expect(await instance.intToBinary(testSet[0])).to.equal(testSet[0].toString(2).split(""));
             });
         });
 
-        describe("Log2 ceiling function", async function () {
-            it("should give the correct result for the ceiling of log2", async function() {
+        describe("Log2ceil function", async function () {
+            it("should give the correct result for the ceiling of log base 2", async function() {
                 const {instance} = await loadFixture(deployWordleFixture);
 
                 const testSet = [20, 5, 1239, 652, 4097, 3, 551, 68, 90, 329, 11334];

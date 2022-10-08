@@ -83,7 +83,7 @@ contract Wordle {
         resetAllAttempts();
     }
 
-    function makeAttempt(uint256[] calldata guesses) public WordleMustBeReady payable returns (bool[2][] memory answer) {
+    function makeAttempt(uint256[] calldata guesses) public WordleMustBeReady payable returns (bool[2][] memory answer, bool isSolved) {
         if (msg.value < fee) revert PlayerMustPayFeeToPlay(fee);
         if (playerAttempts[wordlePuzzleNo][msg.sender] > maxAttempts)
             revert PlayerHasMadeTooManyAttempts("Player has maxed out their attempts for this puzzle. Wait for the next Wordle to play again.");
@@ -107,7 +107,7 @@ contract Wordle {
         playerAttempts[wordlePuzzleNo][msg.sender]++;
         emit PlayerMadeAttempt(msg.sender, playerAttempts[wordlePuzzleNo][msg.sender], wordlePuzzleNo);
 
-        bool isSolved = checkIfSolved(answer);
+        isSolved = checkIfSolved(answer);
 
         if (isSolved) {
             if (playerPuzzleSolvedCount[msg.sender] == 0) playerPuzzleSolvedCountLength++;
