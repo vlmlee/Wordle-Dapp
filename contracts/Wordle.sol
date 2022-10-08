@@ -6,9 +6,9 @@ import "./WordleLeaderboard.sol";
 // The solution for this puzzle can be easily obtained by a computer through brute force since
 // the witnesses are embedded inside of this contract. This puzzle is not meant to be impossible to
 // solve through guessing and checking. In fact, you should be able to solve Wordle in less than
-// 6 tries! It is also not meant to cryptographically secure the secret. This is a demonstration
-// to show that a solution can be encrypted in a RSA accumulator. This is -not- a zero knowledge
-// proof since the proofs/witnesses are provided below.
+// 6 tries! This contract is also not meant to cryptographically secure the secret. This is a demonstration
+// to show that a solution can be encrypted in a RSA accumulator without revealing what the secret (the Wordle
+// solution) is. This is -not- a zero knowledge proof since the proofs/witnesses are provided below.
 contract Wordle {
     address public owner;
     uint256 public wordlePuzzleNo = 0; // updated daily
@@ -30,7 +30,7 @@ contract Wordle {
     error UserIsNotOwner(address _user);
     error PlayerMustPayFeeToPlay(uint256 _fee);
     error WithdrawalFailed();
-    error WithdrawalMustBeNonZero();
+    error WithdrawalMustBeNonZero(uint256 _value);
     error PlayerHasMadeTooManyAttempts(string message);
     error PuzzleIsNotReady();
 
@@ -59,14 +59,14 @@ contract Wordle {
         resetAllAttempts();
     }
 
-    function makeAttempt(uint256[] guesses) public PuzzleMustBeReady payable returns (bool[2][] memory answer) {
+    function makeAttempt(uint256[] calldata guesses) public PuzzleMustBeReady payable returns (bool[2][] memory answer) {
         if (msg.value < fee) revert PlayerMustPayFeeToPlay(fee);
         if (userAttempts[wordlePuzzleNo][msg.sender] > maxAttempts)
             revert PlayerHasMadeTooManyAttempts("Player has maxed out their attempts for this puzzle. Wait for the next Wordle to play again.");
 
         answer = new bool[2][](guesses.length);
 
-        for (uint256 i = 0; i < guesses.length; i++) {
+        for (uint8 i = 0; i < guesses.length; i++) {
             bool isMember = verifyMembership(guesses[i]);
             bool isInTheCorrectPosition = false;
 
@@ -89,7 +89,7 @@ contract Wordle {
     // Checks if the letter is in the solution set.
     // The wordle witnesses will always map:
     // [ 0µ, 1µ, 2µ, 3µ, 4µ, ...(2-5 µ, depending on the word) ]
-    function verifyMembership(uint256 guess) external view PuzzleMustBeReady returns (bool) {
+    function verifyMembership(uint256 guess) public view PuzzleMustBeReady returns (bool) {
         for (uint8 i = 5; i < witnesses.length; i++) {
             uint256 witness = witnesses[i];
             if (fastModExp(witness, guess, modulus) == accumulatorMod) {
@@ -101,7 +101,7 @@ contract Wordle {
     }
 
     // Checks if the letter is in the correct position.
-    function verifyPosition(uint8 index, uint256 guess) external view PuzzleMustBeReady returns (bool) {
+    function verifyPosition(uint8 index, uint256 guess) public view PuzzleMustBeReady returns (bool) {
         uint256 witness = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
 
         if (fastModExp(witness, guess, modulus) == accumulatorMod) {
@@ -112,8 +112,7 @@ contract Wordle {
     }
 
     function resetAllAttempts() public MustBeOwner {
-        delete userAttempts[wordlePuzzleNo];
-        wordlePuzzleNo++;
+        wordlePuzzleNo++; // zeros out previous mapping when value is mutated
     }
 
     function fastModExp(uint256 base, uint256 exponent, uint256 _modulus) pure public returns (uint256) {
