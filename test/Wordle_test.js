@@ -38,20 +38,37 @@ describe("Wordle contract", function () {
     });
 
     describe("Withdrawing funds", async function () {
-       it("should be able to withdraw funds if you are the owner", async function () {
+       it("should be able to withdraw funds if you are the owner with a WithdrawalSuccessful event emitted", async function () {
+           const {instance, owner} = await loadFixture(deployWordleFixture);
 
+           const amount = ethers.utils.parseEther("1.0");
+
+           await owner.sendTransaction({to: instance.address, value: amount});
+
+           const provider = waffle.provider;
+           const balance = await provider.getBalance(instance.address);
+
+           expect(balance).to.equal(amount);
+
+           await expect(instance.withdraw())
+               .to.emit(instance, "WithdrawalSuccessful")
+               .withArgs(amount);
+
+           expect(await provider.getBalance(instance.address)).to.equal(BigNumber.from("0"));
        });
 
        it("should not allow anyone other than the owner to withdraw funds", async function () {
+           const {instance, addr1} = await loadFixture(deployWordleFixture);
 
+           await expect(instance.connect(addr1).withdraw())
+               .to.be.revertedWithCustomError(instance, "PlayerIsNotOwner");
        });
 
        it("should revert if the contract has no funds in its balance", async function () {
+           const {instance, owner} = await loadFixture(deployWordleFixture);
 
-       });
-
-       it("should emit WithdrawalSuccessful event when the owner successfully withdraws the balance", async function () {
-
+           await expect(instance.withdraw())
+               .to.be.revertedWithCustomError(instance, "WithdrawalMustBeNonZero");
        });
     });
 
@@ -71,19 +88,46 @@ describe("Wordle contract", function () {
 
     describe("Create new Wordle puzzle", async function () {
         it("should be able to create a new puzzle with a new acculumator, modulus, and witnesses", async function () {
+            const {instance, owner} = await loadFixture(deployWordleFixture);
 
+            const mockPuzzle = {
+                accumulator: 21,
+                modulus: 234,
+                witnesses: [1, 2, 3, 4, 5, 1, 1, 1, 1]
+            };
+
+            await expect(instance.createNewWordlePuzzle(mockPuzzle.accumulator, mockPuzzle.modulus, mockPuzzle.witnesses))
+                .to.emit(instance, "CreatedNewWordlePuzzle");
         });
 
+        // TODO:
         it("should reset the attempts stored in the contract", async function () {
+            const {instance, owner} = await loadFixture(deployWordleFixture);
 
+            await instance.resetAllAttempts();
+
+            expect(await instance.wordlePuzzleNo()).to.equal(1);
         });
 
         it("should update the Wordle puzzle number", async function () {
+            const {instance, owner} = await loadFixture(deployWordleFixture);
 
+            await instance.resetAllAttempts();
+
+            expect(await instance.wordlePuzzleNo()).to.equal(1);
         });
 
         it("should only allow the contract owner to create a new Wordle", async function () {
+            const {instance, owner, addr1} = await loadFixture(deployWordleFixture);
 
+            const mockPuzzle = {
+                accumulator: 21,
+                modulus: 234,
+                witnesses: [1, 2, 3, 4, 5, 1, 1, 1, 1]
+            };
+
+            await expect(instance.connect(addr1).createNewWordlePuzzle(mockPuzzle.accumulator, mockPuzzle.modulus, mockPuzzle.witnesses))
+                .to.be.revertedWithCustomError(instance, "PlayerIsNotOwner");
         });
     });
 
@@ -142,11 +186,43 @@ describe("Wordle contract", function () {
     describe("Helper functions", async function () {
        describe("CheckIfSolved", async function () {
            it("should return true if all elements in the array of 2 element arrays are true", async function () {
+               const {instance} = await loadFixture(deployWordleFixture);
 
+               const mockAnswer = [
+                   [true, true], // [isMember, isInTheCorrectPosition]
+                   [true, true],
+                   [true, true],
+                   [true, true],
+                   [true, true]
+               ];
+
+               const isSolved = await instance.checkIfSolved(mockAnswer);
+               expect(isSolved).to.equal(true);
            });
 
            it("should return false if at least one element is false", async function () {
+               const {instance, owner, addr1} = await loadFixture(deployWordleFixture);
 
+               const mockAnswer = [
+                   [true, true], // [isMember, isInTheCorrectPosition]
+                   [true, false],
+                   [true, true],
+                   [true, true],
+                   [true, true]
+               ];
+
+               const mockAnswer2 = [
+                   [true, true], // [isMember, isInTheCorrectPosition]
+                   [true, false],
+                   [true, true],
+                   [false, false], // isInCorrectPosition will always be false if isMember is false
+                   [true, true]
+               ];
+
+               const isSolved = await instance.checkIfSolved(mockAnswer);
+               const isSolved2 = await instance.checkIfSolved(mockAnswer2);
+               expect(isSolved).to.equal(false);
+               expect(isSolved2).to.equal(false);
            });
        });
 
