@@ -19,8 +19,8 @@ contract Wordle {
     uint256 public accumulatorMod;
     uint256 public modulus;
     uint256[] public witnesses;
-    uint8 public maxAttempts = 6;
-    uint256 public fee = 700000 gwei;
+    uint8 public constant MAX_ATTEMPTS = 6;
+    uint256 public constant FEE = 700000 gwei;
     ILeaderboard public leaderboard;
 
     event WithdrawalSuccessful(uint256 _value);
@@ -84,8 +84,8 @@ contract Wordle {
     }
 
     function makeAttempt(uint256[] calldata guesses) public WordleMustBeReady payable returns (bool[2][] memory answer, bool isSolved) {
-        if (msg.value < fee) revert PlayerMustPayFeeToPlay(fee);
-        if (playerAttempts[wordlePuzzleNo][msg.sender] > maxAttempts)
+        if (msg.value < FEE) revert PlayerMustPayFeeToPlay(FEE);
+        if (playerAttempts[wordlePuzzleNo][msg.sender] > MAX_ATTEMPTS)
             revert PlayerHasMadeTooManyAttempts("Player has maxed out their attempts for this puzzle. Wait for the next Wordle to play again.");
 
         bool playerHasSolvedPuzzle = playerPuzzleNumberSolved[msg.sender][wordlePuzzleNo];
