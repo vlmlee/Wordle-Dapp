@@ -27,6 +27,7 @@ contract Wordle {
     event PlayerMadeAttempt(address indexed _player, uint8 attemptNumber, uint256 _wordlePuzzleNo);
     event PlayerSolvedWordle(address indexed _player);
     event LeaderboardSuccessfullyFunded(address indexed _leaderAddr, uint256 _amount);
+    event CreatedNewWordlePuzzle(uint256 _accumulatorMod, uint256 _modulus, uint256[] _witnesses);
 
     mapping(uint => mapping(address => uint8)) public playerAttempts;
     uint256 public playerAttemptsLength;
@@ -35,7 +36,7 @@ contract Wordle {
     mapping(address => mapping(uint256 => bool)) public playerPuzzleNumberSolved;
     uint256 public playerPuzzleSolvedCountLength;
 
-    error PlayerIsNotOwner(address _player);
+    error PlayerIsNotOwner();
     error PlayerMustPayFeeToPlay(uint256 _fee);
     error WithdrawalFailed();
     error WithdrawalMustBeNonZero(uint256 _value);
@@ -46,7 +47,7 @@ contract Wordle {
     error ContractDoesNotHaveEnoughFunds(uint256 _value);
 
     modifier MustBeOwner() {
-        if (msg.sender != owner) revert PlayerIsNotOwner(msg.sender);
+        if (msg.sender != owner) revert PlayerIsNotOwner();
         _;
     }
 
@@ -81,6 +82,7 @@ contract Wordle {
         modulus = _modulus;
         witnesses = _witnesses;
         resetAllAttempts();
+        emit CreatedNewWordlePuzzle(_accumulatorMod, _modulus, _witnesses);
     }
 
     function makeAttempt(uint256[] calldata guesses) public WordleMustBeReady payable returns (bool[2][] memory answer, bool isSolved) {
@@ -228,6 +230,12 @@ contract Wordle {
 
     // Outputs to binary array in a "big-endian"-like way, i.e. 30 = [1, 1, 1, 1, 0]
     function intToBinary(uint256 n) pure public returns (uint8[] memory output) {
+        if (n == 2) {
+            output[0] = 1;
+            output[1] = 1;
+            return output;
+        }
+
         uint binLength = log2ceil(n);
         output = new uint8[](binLength);
 
