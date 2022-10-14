@@ -1,6 +1,6 @@
-const { expect } = require("chai");
-const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
-const { ethers, waffle } = require("hardhat");
+const {expect} = require("chai");
+const {loadFixture} = require("@nomicfoundation/hardhat-network-helpers");
+const {ethers, waffle} = require("hardhat");
 const {BigNumber} = require("ethers");
 
 let primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911]
@@ -40,52 +40,52 @@ describe("Wordle contract", function () {
     });
 
     describe("Withdrawing funds", async function () {
-       it("should be able to withdraw funds if you are the owner with a WithdrawalSuccessful event emitted", async function () {
-           const {instance, owner} = await loadFixture(deployWordleFixture);
+        it("should be able to withdraw funds if you are the owner with a WithdrawalSuccessful event emitted", async function () {
+            const {instance, owner} = await loadFixture(deployWordleFixture);
 
-           const amount = ethers.utils.parseEther("1.0");
+            const amount = ethers.utils.parseEther("1.0");
 
-           await owner.sendTransaction({to: instance.address, value: amount});
+            await owner.sendTransaction({to: instance.address, value: amount});
 
-           const provider = waffle.provider;
-           const balance = await provider.getBalance(instance.address);
+            const provider = waffle.provider;
+            const balance = await provider.getBalance(instance.address);
 
-           expect(balance).to.equal(amount);
+            expect(balance).to.equal(amount);
 
-           await expect(instance.withdraw())
-               .to.emit(instance, "WithdrawalSuccessful")
-               .withArgs(amount);
+            await expect(instance.withdraw())
+                .to.emit(instance, "WithdrawalSuccessful")
+                .withArgs(amount);
 
-           expect(await provider.getBalance(instance.address)).to.equal(BigNumber.from("0"));
-       });
+            expect(await provider.getBalance(instance.address)).to.equal(BigNumber.from("0"));
+        });
 
-       it("should not allow anyone other than the owner to withdraw funds", async function () {
-           const {instance, addr1} = await loadFixture(deployWordleFixture);
+        it("should not allow anyone other than the owner to withdraw funds", async function () {
+            const {instance, addr1} = await loadFixture(deployWordleFixture);
 
-           await expect(instance.connect(addr1).withdraw())
-               .to.be.revertedWithCustomError(instance, "PlayerIsNotOwner");
-       });
+            await expect(instance.connect(addr1).withdraw())
+                .to.be.revertedWithCustomError(instance, "PlayerIsNotOwner");
+        });
 
-       it("should revert if the contract has no funds in its balance", async function () {
-           const {instance, owner} = await loadFixture(deployWordleFixture);
+        it("should revert if the contract has no funds in its balance", async function () {
+            const {instance, owner} = await loadFixture(deployWordleFixture);
 
-           await expect(instance.withdraw())
-               .to.be.revertedWithCustomError(instance, "WithdrawalMustBeNonZero");
-       });
+            await expect(instance.withdraw())
+                .to.be.revertedWithCustomError(instance, "WithdrawalMustBeNonZero");
+        });
     });
 
     describe("Leaderboard", async function () {
-       it("should set a leaderboard", async function () {
+        it("should set a leaderboard", async function () {
 
-       });
+        });
 
-       it("should be able to add rankings into the leaderboard", async function () {
+        it("should be able to add rankings into the leaderboard", async function () {
 
-       });
+        });
 
-       it("should allow the contract to fund the leaderboard", async function () {
+        it("should allow the contract to fund the leaderboard", async function () {
 
-       });
+        });
     });
 
     describe("Create new Wordle puzzle", async function () {
@@ -186,117 +186,186 @@ describe("Wordle contract", function () {
     });
 
     describe("Helper functions", async function () {
-       describe("CheckIfSolved", async function () {
-           it("should return true if all elements in the array of 2 element arrays are true", async function () {
-               const {instance} = await loadFixture(deployWordleFixture);
+        describe("CheckIfSolved", async function () {
+            it("should return true if all elements in the array of 2 element arrays are true", async function () {
+                const {instance} = await loadFixture(deployWordleFixture);
 
-               const mockAnswer = [
-                   [true, true], // [isMember, isInTheCorrectPosition]
-                   [true, true],
-                   [true, true],
-                   [true, true],
-                   [true, true]
-               ];
+                const mockAnswer = [
+                    [true, true], // [isMember, isInTheCorrectPosition]
+                    [true, true],
+                    [true, true],
+                    [true, true],
+                    [true, true]
+                ];
 
-               const isSolved = await instance.checkIfSolved(mockAnswer);
-               expect(isSolved).to.equal(true);
-           });
+                const isSolved = await instance.checkIfSolved(mockAnswer);
+                expect(isSolved).to.equal(true);
+            });
 
-           it("should return false if at least one element is false", async function () {
-               const {instance, owner, addr1} = await loadFixture(deployWordleFixture);
+            it("should return false if at least one element is false", async function () {
+                const {instance, owner, addr1} = await loadFixture(deployWordleFixture);
 
-               const mockAnswer = [
-                   [true, true], // [isMember, isInTheCorrectPosition]
-                   [true, false],
-                   [true, true],
-                   [true, true],
-                   [true, true]
-               ];
+                const mockAnswer = [
+                    [true, true], // [isMember, isInTheCorrectPosition]
+                    [true, false],
+                    [true, true],
+                    [true, true],
+                    [true, true]
+                ];
 
-               const mockAnswer2 = [
-                   [true, true], // [isMember, isInTheCorrectPosition]
-                   [true, false],
-                   [true, true],
-                   [false, false], // isInCorrectPosition will always be false if isMember is false
-                   [true, true]
-               ];
+                const mockAnswer2 = [
+                    [true, true], // [isMember, isInTheCorrectPosition]
+                    [true, false],
+                    [true, true],
+                    [false, false], // isInCorrectPosition will always be false if isMember is false
+                    [true, true]
+                ];
 
-               const isSolved = await instance.checkIfSolved(mockAnswer);
-               const isSolved2 = await instance.checkIfSolved(mockAnswer2);
-               expect(isSolved).to.equal(false);
-               expect(isSolved2).to.equal(false);
-           });
-       });
+                const isSolved = await instance.checkIfSolved(mockAnswer);
+                const isSolved2 = await instance.checkIfSolved(mockAnswer2);
+                expect(isSolved).to.equal(false);
+                expect(isSolved2).to.equal(false);
+            });
+        });
 
-       describe("VerifyMembership", async function () {
-           const {instance} = await loadFixture(deployWordleFixture);
+        describe("VerifyMembership", async function () {
+            it("should verify the membership of letters in the solution", async function () {
+                const {instance} = await loadFixture(deployWordleFixture);
 
-           const solution = [
-               "r0",
-               "A1",
-               "l2",
-               "L3",
-               "y4",
-               "r5",
-               "a5",
-               "l5",
-               "y5"
-           ];
-           const _primes = solution.map(letterPosition => {
-               const [letter, position] = letterPosition.split("");
-               return letterToPrime(letter, position);
-           });
+                const solution = [
+                    "r0",
+                    "A1",
+                    "l2",
+                    "L3",
+                    "y4",
+                    "r5",
+                    "a5",
+                    "l5",
+                    "y5"
+                ];
+                const _primes = solution.map(letterPosition => {
+                    const [letter, position] = letterPosition.split("");
+                    return letterToPrime(letter, position);
+                });
 
-           const _primesProduct = _primes.reduce((acc, cur) => {
-               acc = acc*cur;
-               return acc;
-           }, 1);
+                console.log("Primes: ", _primes);
 
-           console.log(_primes, _primesProduct);
+                const generator = Math.floor(Math.random() * 2 ** 16);
+                console.log("Generator: ", generator);
+                const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
+                console.log("Modulus: ", _modulus);
 
-           const generator = Math.floor(Math.random() * 2**16);
-           console.log("Generator: ", generator);
-           const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
-           console.log("Modulus: ", _modulus);
-           const _accumulator = powerMod(generator, _primesProduct, _modulus);
-           console.log("Accumulator: ", _accumulator);
+                const _accumulator = _primes.reduce((acc, cur, i) => {
+                    if (i === 0) return acc;
+                    acc = powerMod(acc, cur, _modulus);
+                    return acc;
+                }, powerMod(generator, _primes[0], _modulus));
+                console.log("Accumulator: ", _accumulator);
 
-           const witnesses = _primes.map((p, i, array) => {
-               const exponent = array.filter((x, j) => j !== i).reduce((acc, cur) => {
-                   acc = acc*cur;
-                   return acc;
-               }, 1);
+                const witnesses = _primes.map((p, i, array) => {
+                    const _primesToCalculate = array.filter((x, j) => j !== i);
 
-               return powerMod(generator, exponent, _modulus);
-           });
-           console.log("Witnesses: ", witnesses);
+                    return _primesToCalculate.reduce((acc, cur, j) => {
+                        if (j === 0) return acc;
+                        acc = powerMod(acc, cur, _modulus);
+                        return acc;
+                    }, powerMod(generator, _primesToCalculate[0], _modulus));
+                });
+                console.log("Witnesses: ", witnesses);
 
-           await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
+                await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
 
-           const r5isMember = await instance.verifyMembership(letterToPrime("r", 5));
-           const a5isMember = await instance.verifyMembership(letterToPrime("a", 5));
-           const l5isMember = await instance.verifyMembership(letterToPrime("l", 5));
-           const y5isMember = await instance.verifyMembership(letterToPrime("y", 5));
-           const t5shouldNotBeMember = await instance.verifyMembership(letterToPrime("t", 5));
-           const f5shouldNotBeMember = await instance.verifyMembership(letterToPrime("f", 5));
-           const k5shouldNotBeMember = await instance.verifyMembership(letterToPrime("k", 5));
+                const r5isMember = await instance.verifyMembership(letterToPrime("r", 5));
+                const a5isMember = await instance.verifyMembership(letterToPrime("a", 5));
+                const l5isMember = await instance.verifyMembership(letterToPrime("l", 5));
+                const y5isMember = await instance.verifyMembership(letterToPrime("y", 5));
+                const t5shouldNotBeMember = await instance.verifyMembership(letterToPrime("t", 5));
+                const f5shouldNotBeMember = await instance.verifyMembership(letterToPrime("f", 5));
+                const k5shouldNotBeMember = await instance.verifyMembership(letterToPrime("k", 5));
 
-           expect(r5isMember).to.be.true;
-           expect(a5isMember).to.be.true;
-           expect(l5isMember).to.be.true;
-           expect(y5isMember).to.be.true;
-           expect(t5shouldNotBeMember).to.be.false;
-           expect(f5shouldNotBeMember).to.be.false;
-           expect(k5shouldNotBeMember).to.be.false;
-       });
+                expect(r5isMember).to.be.true;
+                expect(a5isMember).to.be.true;
+                expect(l5isMember).to.be.true;
+                expect(y5isMember).to.be.true;
+                expect(t5shouldNotBeMember).to.be.false;
+                expect(f5shouldNotBeMember).to.be.false;
+                expect(k5shouldNotBeMember).to.be.false;
+            });
+        });
 
-       describe("VerifyPosition", async function () {
+        describe("VerifyPosition", async function () {
+            it("should verify the position of letters in the solution", async function () {
+                const {instance} = await loadFixture(deployWordleFixture);
 
-       });
+                const solution = [
+                    "r0",
+                    "A1",
+                    "l2",
+                    "L3",
+                    "y4",
+                    "r5",
+                    "a5",
+                    "l5",
+                    "y5"
+                ];
+                const _primes = solution.map(letterPosition => {
+                    const [letter, position] = letterPosition.split("");
+                    return letterToPrime(letter, position);
+                });
+
+                console.log("Primes: ", _primes);
+
+                const generator = Math.floor(Math.random() * 2 ** 16);
+                console.log("Generator: ", generator);
+                const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
+                console.log("Modulus: ", _modulus);
+
+                const _accumulator = _primes.reduce((acc, cur, i) => {
+                    if (i === 0) return acc;
+                    acc = powerMod(acc, cur, _modulus);
+                    return acc;
+                }, powerMod(generator, _primes[0], _modulus));
+                console.log("Accumulator: ", _accumulator);
+
+                const witnesses = _primes.map((p, i, array) => {
+                    const _primesToCalculate = array.filter((x, j) => j !== i);
+
+                    return _primesToCalculate.reduce((acc, cur, j) => {
+                        if (j === 0) return acc;
+                        acc = powerMod(acc, cur, _modulus);
+                        return acc;
+                    }, powerMod(generator, _primesToCalculate[0], _modulus));
+                });
+                console.log("Witnesses: ", witnesses);
+
+                await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
+
+                const r0isInCorrectPosition = await instance.verifyPosition(0, letterToPrime("r", 0));
+                const a1isInCorrectPosition = await instance.verifyPosition(1, letterToPrime("a", 1));
+                const l2isInCorrectPosition = await instance.verifyPosition(2, letterToPrime("l", 2));
+                const l3isInCorrectPosition = await instance.verifyPosition(3, letterToPrime("l", 3));
+                const y4isInCorrectPosition = await instance.verifyPosition(4, letterToPrime("y", 4));
+                const l4shouldNotBeInTheCorrectPosition = await instance.verifyPosition(4, letterToPrime("l", 4));
+                const r1shouldNotBeInTheCorrectPosition = await instance.verifyPosition(1, letterToPrime("r", 1));
+                const k3shouldNotBeInTheCorrectPosition = await instance.verifyPosition(3, letterToPrime("k", 3));
+                const z2shouldNotBeInTheCorrectPosition = await instance.verifyPosition(2, letterToPrime("z", 2));
+
+                expect(r0isInCorrectPosition).to.be.true;
+                expect(a1isInCorrectPosition).to.be.true;
+                expect(l2isInCorrectPosition).to.be.true;
+                expect(l3isInCorrectPosition).to.be.true;
+                expect(y4isInCorrectPosition).to.be.true;
+
+                expect(l4shouldNotBeInTheCorrectPosition).to.be.false;
+                expect(r1shouldNotBeInTheCorrectPosition).to.be.false;
+                expect(k3shouldNotBeInTheCorrectPosition).to.be.false;
+                expect(z2shouldNotBeInTheCorrectPosition).to.be.false;
+            });
+        });
     });
 
     describe("Math functions", async function () {
-        describe("Fast Exp Mod function / divide and conquer",  async function () {
+        describe("Fast Exp Mod function / divide and conquer", async function () {
             it("should give the correct result for modular exponentiation of large numbers", async function () {
                 const {instance} = await loadFixture(deployWordleFixture);
 
@@ -401,46 +470,46 @@ describe("Wordle contract", function () {
             });
 
             describe("Power mod", async function () {
-               it("should give the correct result for modular exponentiation", async function () {
-                   const {instance} = await loadFixture(deployWordleFixture);
+                it("should give the correct result for modular exponentiation", async function () {
+                    const {instance} = await loadFixture(deployWordleFixture);
 
-                   const testSet = [
-                       {
-                           base: Math.floor(Math.random() * 256),
-                           exp: primes[Math.floor(Math.random() * primes.length)],
-                           mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
-                       },
-                       {
-                           base: Math.floor(Math.random() * 256),
-                           exp: primes[Math.floor(Math.random() * primes.length)],
-                           mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
-                       },
-                       {
-                           base: Math.floor(Math.random() * 256),
-                           exp: primes[Math.floor(Math.random() * primes.length)],
-                           mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
-                       },
-                       {
-                           base: Math.floor(Math.random() * 256),
-                           exp: primes[Math.floor(Math.random() * primes.length)],
-                           mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
-                       },
-                   ];
+                    const testSet = [
+                        {
+                            base: Math.floor(Math.random() * 256),
+                            exp: primes[Math.floor(Math.random() * primes.length)],
+                            mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
+                        },
+                        {
+                            base: Math.floor(Math.random() * 256),
+                            exp: primes[Math.floor(Math.random() * primes.length)],
+                            mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
+                        },
+                        {
+                            base: Math.floor(Math.random() * 256),
+                            exp: primes[Math.floor(Math.random() * primes.length)],
+                            mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
+                        },
+                        {
+                            base: Math.floor(Math.random() * 256),
+                            exp: primes[Math.floor(Math.random() * primes.length)],
+                            mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
+                        },
+                    ];
 
-                   for (let i = 0; i < testSet.length; i++) {
-                       // console.log(testSet[i]);
-                       const pMod1 = await instance.powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
-                       const pMod2 = powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
-                       // console.log("Power Mod - Solidity: ", pMod1);
-                       // console.log("Power Mod - JS: ", pMod1);
-                       expect(pMod1.toNumber()).to.equal(pMod2);
-                   }
-               });
+                    for (let i = 0; i < testSet.length; i++) {
+                        // console.log(testSet[i]);
+                        const pMod1 = await instance.powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
+                        const pMod2 = powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
+                        // console.log("Power Mod - Solidity: ", pMod1);
+                        // console.log("Power Mod - JS: ", pMod1);
+                        expect(pMod1.toNumber()).to.equal(pMod2);
+                    }
+                });
             });
         });
 
         describe("Log2ceil function", async function () {
-            it("should give the correct result for the ceiling of log base 2", async function() {
+            it("should give the correct result for the ceiling of log base 2", async function () {
                 const {instance} = await loadFixture(deployWordleFixture);
 
                 const testSet = [20, 5, 1239, 652, 4097, 3, 551, 68, 90, 329, 11334];
