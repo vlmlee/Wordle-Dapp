@@ -264,11 +264,8 @@ describe("Wordle contract", function () {
                 ];
 
                 for (let i = 0; i < testSet.length; i++) {
-                    console.log(testSet[i]);
                     const fastMod = await instance.fastModExp(testSet[i].base, testSet[i].exp, testSet[i].mod);
                     const pMod = powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
-                    console.log("Fast Mod: ", fastMod);
-                    console.log("Power Mod: ", pMod);
                     expect(fastMod.toNumber()).to.equal(pMod);
                 }
             });
@@ -294,9 +291,10 @@ describe("Wordle contract", function () {
                     11,
                     298
                 ];
-                testSet.forEach(async (n) => {
-                    expect(await instance.intToBinary(n)).to.equal(n.toString(2).split("").map(x => +x));
-                });
+
+                for (let i = 0; i < testSet.length; i++) {
+                    expect(await instance.intToBinary(testSet[i])).to.deep.equal(testSet[i].toString(2).split("").map(x => +x));
+                }
             });
 
             describe("Divide and conquer memo", async function () {
@@ -373,8 +371,8 @@ describe("Wordle contract", function () {
                        console.log(testSet[i]);
                        const pMod1 = await instance.powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
                        const pMod2 = powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
-                       console.log("Power Mod - Solidity: ", pMod1);
-                       console.log("Power Mod - JS: ", pMod1);
+                       // console.log("Power Mod - Solidity: ", pMod1);
+                       // console.log("Power Mod - JS: ", pMod1);
                        expect(pMod1.toNumber()).to.equal(pMod2);
                    }
                });
