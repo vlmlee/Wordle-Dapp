@@ -1,6 +1,7 @@
 const { expect } = require("chai");
 const { loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
 const { ethers, waffle } = require("hardhat");
+const {BigNumber} = require("ethers");
 
 let primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911]
 
@@ -160,7 +161,7 @@ describe("Wordle contract", function () {
 
     describe("Math functions", async function () {
         describe("Fast Exp Mod function / divide and conquer",  async function () {
-            it("should give the correct result for exponentiation modulo of large numbers", async function () {
+            it("should give the correct result for modular exponentiation of large numbers", async function () {
                 const {instance} = await loadFixture(deployWordleFixture);
 
                 const testSet = [
@@ -187,8 +188,12 @@ describe("Wordle contract", function () {
                 ];
 
                 for (let i = 0; i < testSet.length; i++) {
-                    expect(await instance.fastModExp(testSet[i].base, testSet[i].exp, testSet[i].mod))
-                        .to.equal(powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod));
+                    console.log(testSet[i]);
+                    const fastMod = await instance.fastModExp(testSet[i].base, testSet[i].exp, testSet[i].mod);
+                    const pMod = powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
+                    console.log("Fast Mod: ", fastMod);
+                    console.log("Power Mod: ", pMod);
+                    expect(fastMod.toNumber()).to.equal(pMod);
                 }
             });
         });
@@ -198,10 +203,105 @@ describe("Wordle contract", function () {
                 const {instance} = await loadFixture(deployWordleFixture);
 
                 const testSet = [
-                    30
+                    30,
+                    1234,
+                    44,
+                    3,
+                    986,
+                    12,
+                    31234,
+                    221,
+                    84,
+                    7639,
+                    1294,
+                    213,
+                    11,
+                    298
                 ];
+                testSet.forEach(async (n) => {
+                    expect(await instance.intToBinary(n)).to.equal(n.toString(2).split("").map(x => +x));
+                });
+            });
 
-                expect(await instance.intToBinary(testSet[0])).to.equal(testSet[0].toString(2).split(""));
+            describe("Divide and conquer memo", async function () {
+                it("should give the correct mod exp of an binary array for powers of two", async function () {
+                    const {instance} = await loadFixture(deployWordleFixture);
+
+                    const testSet = [
+                        {
+                            base: 21,
+                            exponent: 34,
+                            modulus: 65,
+                            solution: [
+                                BigNumber.from("1"), // 21^32 mod 65
+                                BigNumber.from("1"), // 21^16 mod 65
+                                BigNumber.from("1"), // 21^8 mod 65
+                                BigNumber.from("1"), // 21^4 mod 65
+                                BigNumber.from("51"), // 21^2 mod 65
+                                BigNumber.from("21") // 21^1 mod 65
+                            ],
+                        },
+                        {
+                            base: 44,
+                            exponent: 214,
+                            modulus: 99,
+                            solution: [
+                                BigNumber.from("55"), // 44^128 mod 99
+                                BigNumber.from("55"), // 44^64 mod 99
+                                BigNumber.from("55"), // 44^32 mod 99
+                                BigNumber.from("55"), // 44^16 mod 99
+                                BigNumber.from("55"), // 44^8 mod 99
+                                BigNumber.from("55"), // 44^4 mod 99
+                                BigNumber.from("55"), // 44^2 mod 99
+                                BigNumber.from("44") // 44^1 mod 99
+                            ]
+                        }
+                    ];
+
+                    for (let i = 0; i < testSet.length; i++) {
+                        const arrayToTest = await instance.intToBinary(testSet[i].exponent);
+                        const s = await instance.createMemoArrayOfPowersOfTwo(testSet[i].base, arrayToTest, testSet[i].modulus);
+                        expect(s).to.deep.equal(testSet[i].solution);
+                    }
+                });
+            });
+
+            describe("Power mod", async function () {
+               it("should give the correct result for modular exponentiation", async function () {
+                   const {instance} = await loadFixture(deployWordleFixture);
+
+                   const testSet = [
+                       {
+                           base: Math.floor(Math.random() * 256),
+                           exp: primes[Math.floor(Math.random() * primes.length)],
+                           mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
+                       },
+                       {
+                           base: Math.floor(Math.random() * 256),
+                           exp: primes[Math.floor(Math.random() * primes.length)],
+                           mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
+                       },
+                       {
+                           base: Math.floor(Math.random() * 256),
+                           exp: primes[Math.floor(Math.random() * primes.length)],
+                           mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
+                       },
+                       {
+                           base: Math.floor(Math.random() * 256),
+                           exp: primes[Math.floor(Math.random() * primes.length)],
+                           mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
+                       },
+                   ];
+
+                   for (let i = 0; i < testSet.length; i++) {
+                       console.log(testSet[i]);
+                       const pMod1 = await instance.powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
+                       const pMod2 = powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
+                       console.log("Power Mod - Solidity: ", pMod1);
+                       console.log("Power Mod - JS: ", pMod1);
+                       expect(pMod1.toNumber()).to.equal(pMod2);
+                   }
+               });
             });
         });
 
