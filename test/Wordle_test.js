@@ -4,6 +4,8 @@ const { ethers, waffle } = require("hardhat");
 const {BigNumber} = require("ethers");
 
 let primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911]
+let alphabet = "abcdefghijklmnopqrstuvwxyz";
+let letterToPrime = (letter, index) => primes[(alphabet.length * index) + alphabet.indexOf(letter.toLowerCase())];
 
 // calculates base^exponent % modulus
 function powerMod(base, exponent, modulus) {
@@ -227,7 +229,65 @@ describe("Wordle contract", function () {
        });
 
        describe("VerifyMembership", async function () {
+           const {instance} = await loadFixture(deployWordleFixture);
 
+           const solution = [
+               "r0",
+               "A1",
+               "l2",
+               "L3",
+               "y4",
+               "r5",
+               "a5",
+               "l5",
+               "y5"
+           ];
+           const _primes = solution.map(letterPosition => {
+               const [letter, position] = letterPosition.split("");
+               return letterToPrime(letter, position);
+           });
+
+           const _primesProduct = _primes.reduce((acc, cur) => {
+               acc = acc*cur;
+               return acc;
+           }, 1);
+
+           console.log(_primes, _primesProduct);
+
+           const generator = Math.floor(Math.random() * 2**16);
+           console.log("Generator: ", generator);
+           const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
+           console.log("Modulus: ", _modulus);
+           const _accumulator = powerMod(generator, _primesProduct, _modulus);
+           console.log("Accumulator: ", _accumulator);
+
+           const witnesses = _primes.map((p, i, array) => {
+               const exponent = array.filter((x, j) => j !== i).reduce((acc, cur) => {
+                   acc = acc*cur;
+                   return acc;
+               }, 1);
+
+               return powerMod(generator, exponent, _modulus);
+           });
+           console.log("Witnesses: ", witnesses);
+
+           await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
+
+           const r5isMember = await instance.verifyMembership(letterToPrime("r", 5));
+           const a5isMember = await instance.verifyMembership(letterToPrime("a", 5));
+           const l5isMember = await instance.verifyMembership(letterToPrime("l", 5));
+           const y5isMember = await instance.verifyMembership(letterToPrime("y", 5));
+           const t5shouldNotBeMember = await instance.verifyMembership(letterToPrime("t", 5));
+           const f5shouldNotBeMember = await instance.verifyMembership(letterToPrime("f", 5));
+           const k5shouldNotBeMember = await instance.verifyMembership(letterToPrime("k", 5));
+
+           expect(r5isMember).to.be.true;
+           expect(a5isMember).to.be.true;
+           expect(l5isMember).to.be.true;
+           expect(y5isMember).to.be.true;
+           expect(t5shouldNotBeMember).to.be.false;
+           expect(f5shouldNotBeMember).to.be.false;
+           expect(k5shouldNotBeMember).to.be.false;
        });
 
        describe("VerifyPosition", async function () {
@@ -368,7 +428,7 @@ describe("Wordle contract", function () {
                    ];
 
                    for (let i = 0; i < testSet.length; i++) {
-                       console.log(testSet[i]);
+                       // console.log(testSet[i]);
                        const pMod1 = await instance.powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
                        const pMod2 = powerMod(testSet[i].base, testSet[i].exp, testSet[i].mod);
                        // console.log("Power Mod - Solidity: ", pMod1);
