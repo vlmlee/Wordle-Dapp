@@ -225,6 +225,7 @@ contract Wordle {
     // Outputs to binary array in a "big-endian"-like way, i.e. 30 = [1, 1, 1, 1, 0]
     function intToBinary(uint256 n) pure public returns (uint8[] memory output) {
         if (n == 2) {
+            output = new uint8[](2);
             output[0] = 0;
             output[1] = 1;
             return output;
