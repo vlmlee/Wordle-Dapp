@@ -7,6 +7,26 @@ let primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61
 let alphabet = "abcdefghijklmnopqrstuvwxyz";
 let letterToPrime = (letter, index) => primes[(alphabet.length * index) + alphabet.indexOf(letter.toLowerCase())];
 
+let calculateAccumulator = (solution, base, _modulus) => {
+    return solution.reduce((acc, cur, i) => {
+        if (i === 0) return acc;
+        acc = powerMod(acc, cur, _modulus);
+        return acc;
+    }, powerMod(base, solution[0], _modulus));
+};
+
+let calculateWitnesses = (solution, base, _modulus) => {
+    return solution.map((p, i, array) => {
+        const _primesToCalculate = array.filter((x, j) => j !== i);
+
+        return _primesToCalculate.reduce((acc, cur, j) => {
+            if (j === 0) return acc;
+            acc = powerMod(acc, cur, _modulus);
+            return acc;
+        }, powerMod(base, _primesToCalculate[0], _modulus));
+    });
+}
+
 // calculates base^exponent % modulus
 function powerMod(base, exponent, modulus) {
     if (modulus === 1) return 0;
@@ -255,22 +275,10 @@ describe("Wordle contract", function () {
                 const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
                 console.log("Modulus: ", _modulus);
 
-                const _accumulator = _primes.reduce((acc, cur, i) => {
-                    if (i === 0) return acc;
-                    acc = powerMod(acc, cur, _modulus);
-                    return acc;
-                }, powerMod(generator, _primes[0], _modulus));
+                const _accumulator = calculateAccumulator(_primes, generator, _modulus);
                 console.log("Accumulator: ", _accumulator);
 
-                const witnesses = _primes.map((p, i, array) => {
-                    const _primesToCalculate = array.filter((x, j) => j !== i);
-
-                    return _primesToCalculate.reduce((acc, cur, j) => {
-                        if (j === 0) return acc;
-                        acc = powerMod(acc, cur, _modulus);
-                        return acc;
-                    }, powerMod(generator, _primesToCalculate[0], _modulus));
-                });
+                const witnesses = calculateWitnesses(_primes, generator, _modulus);
                 console.log("Witnesses: ", witnesses);
 
                 await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
@@ -320,22 +328,10 @@ describe("Wordle contract", function () {
                 const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
                 console.log("Modulus: ", _modulus);
 
-                const _accumulator = _primes.reduce((acc, cur, i) => {
-                    if (i === 0) return acc;
-                    acc = powerMod(acc, cur, _modulus);
-                    return acc;
-                }, powerMod(generator, _primes[0], _modulus));
+                const _accumulator = calculateAccumulator(_primes, generator, _modulus);
                 console.log("Accumulator: ", _accumulator);
 
-                const witnesses = _primes.map((p, i, array) => {
-                    const _primesToCalculate = array.filter((x, j) => j !== i);
-
-                    return _primesToCalculate.reduce((acc, cur, j) => {
-                        if (j === 0) return acc;
-                        acc = powerMod(acc, cur, _modulus);
-                        return acc;
-                    }, powerMod(generator, _primesToCalculate[0], _modulus));
-                });
+                const witnesses = calculateWitnesses(_primes, generator, _modulus);
                 console.log("Witnesses: ", witnesses);
 
                 await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
