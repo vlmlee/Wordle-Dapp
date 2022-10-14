@@ -211,11 +211,15 @@ describe("Wordle contract", function () {
                 const {instance} = await loadFixture(deployWordleFixture);
 
                 const mockAnswer = [
-                    [true, true], // [isMember, isInTheCorrectPosition]
-                    [true, true],
-                    [true, true],
-                    [true, true],
-                    [true, true]
+                    true,
+                    true,
+                    true,
+                    true,
+                    true,
+                    true,
+                    true,
+                    true,
+                    true
                 ];
 
                 const isSolved = await instance.checkIfSolved(mockAnswer);
@@ -226,19 +230,29 @@ describe("Wordle contract", function () {
                 const {instance, owner, addr1} = await loadFixture(deployWordleFixture);
 
                 const mockAnswer = [
-                    [true, true], // [isMember, isInTheCorrectPosition]
-                    [true, false],
-                    [true, true],
-                    [true, true],
-                    [true, true]
+                    true,
+                    true,
+                    false,
+                    true,
+                    true,
+                    true,
+                    true,
+                    true,
+                    true,
+                    true
                 ];
 
                 const mockAnswer2 = [
-                    [true, true], // [isMember, isInTheCorrectPosition]
-                    [true, false],
-                    [true, true],
-                    [false, false], // isInCorrectPosition will always be false if isMember is false
-                    [true, true]
+                    true,
+                    true,
+                    false,
+                    true,
+                    true,
+                    true,
+                    true,
+                    false,
+                    true,
+                    true
                 ];
 
                 const isSolved = await instance.checkIfSolved(mockAnswer);
