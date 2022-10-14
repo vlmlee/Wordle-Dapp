@@ -16,7 +16,7 @@ interface ILeaderboard {
 contract Wordle {
     address public owner;
     uint256 public wordlePuzzleNo = 0; // updated daily
-    uint256 public accumulatorMod;
+    uint256 public accumulator;
     uint256 public modulus;
     uint256[] public witnesses;
     uint8 public constant MAX_ATTEMPTS = 6;
@@ -27,7 +27,7 @@ contract Wordle {
     event PlayerMadeAttempt(address indexed _player, uint8 attemptNumber, uint256 _wordlePuzzleNo);
     event PlayerSolvedWordle(address indexed _player);
     event LeaderboardSuccessfullyFunded(address indexed _leaderAddr, uint256 _amount);
-    event CreatedNewWordlePuzzle(uint256 _accumulatorMod, uint256 _modulus, uint256[] _witnesses);
+    event CreatedNewWordlePuzzle(uint256 _accumulator, uint256 _modulus, uint256[] _witnesses);
 
     mapping(uint => mapping(address => uint8)) public playerAttempts;
     uint256 public playerAttemptsLength;
@@ -52,7 +52,7 @@ contract Wordle {
     }
 
     modifier WordleMustBeReady() {
-        if (accumulatorMod == 0 || modulus == 0 || witnesses.length == 0) revert WordleIsNotReady();
+        if (accumulator == 0 || modulus == 0 || witnesses.length == 0) revert WordleIsNotReady();
         _;
     }
 
@@ -77,12 +77,12 @@ contract Wordle {
         }
     }
 
-    function createNewWordlePuzzle(uint256 _accumulatorMod, uint256 _modulus, uint256[] calldata _witnesses) external MustBeOwner {
-        accumulatorMod = _accumulatorMod;
+    function createNewWordlePuzzle(uint256 _accumulator, uint256 _modulus, uint256[] calldata _witnesses) external MustBeOwner {
+        accumulator = _accumulator;
         modulus = _modulus;
         witnesses = _witnesses;
         resetAllAttempts();
-        emit CreatedNewWordlePuzzle(_accumulatorMod, _modulus, _witnesses);
+        emit CreatedNewWordlePuzzle(_accumulator, _modulus, _witnesses);
     }
 
     function makeAttempt(uint256[] calldata guesses) public WordleMustBeReady payable returns (bool[2][] memory answer, bool isSolved) {
@@ -138,7 +138,7 @@ contract Wordle {
         for (uint8 i = 5; i < witnesses.length; i++) {
             uint256 witness = witnesses[i];
             uint256 verification = guess > 2**16 ? powerMod(witness, guess, modulus) : fastModExp(witness, guess, modulus);
-            if (verification == accumulatorMod) {
+            if (verification == accumulator) {
                 return true;
             }
         }
@@ -151,7 +151,7 @@ contract Wordle {
         uint256 witness = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
         uint256 verification = guess > 2**16 ? powerMod(witness, guess, modulus) : fastModExp(witness, guess, modulus);
 
-        if (verification == accumulatorMod) {
+        if (verification == accumulator) {
             return true;
         }
 
