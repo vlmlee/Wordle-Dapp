@@ -118,7 +118,7 @@ contract Wordle {
     }
 
     function resetAllAttempts() public MustBeOwner {
-        wordlePuzzleNo++; // zeros out previous mapping when value is mutated
+        wordlePuzzleNo++;
     }
 
     function withdraw() public MustBeOwner {
@@ -135,7 +135,8 @@ contract Wordle {
     function verifyMembership(uint256 guess) public view WordleMustBeReady returns (bool) {
         for (uint8 i = 5; i < witnesses.length; i++) {
             uint256 witness = witnesses[i];
-            if (fastModExp(witness, guess, modulus) == accumulatorMod) {
+            uint256 verification = guess > 2**16 ? powerMod(witness, guess, modulus) : fastModExp(witness, guess, modulus);
+            if (verification == accumulatorMod) {
                 return true;
             }
         }
@@ -146,8 +147,9 @@ contract Wordle {
     // Checks if the letter is in the correct position.
     function verifyPosition(uint8 index, uint256 guess) public view WordleMustBeReady returns (bool) {
         uint256 witness = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
+        uint256 verification = guess > 2**16 ? powerMod(witness, guess, modulus) : fastModExp(witness, guess, modulus);
 
-        if (fastModExp(witness, guess, modulus) == accumulatorMod) {
+        if (verification == accumulatorMod) {
             return true;
         }
 
@@ -170,30 +172,40 @@ contract Wordle {
         }
     }
 
-    function fastModExp(uint256 base, uint256 exponent, uint256 _modulus) pure public returns (uint256) {
-        uint8[] memory binaryArr = intToBinary(exponent);
-        return divideAndConquer(base, binaryArr, _modulus);
+    // Use right-to-left binary method for large exponents. Here we divide instead of add in the divide and conquer strategy.
+    function powerMod(uint256 _base, uint256 _exponent, uint256 _modulus) public pure returns (uint256 result) {
+        if (_modulus == 1) return 0;
+        result = 1;
+        _base = _base % _modulus;
+        while (_exponent > 0) {
+            if (_exponent % 2 == 1)  //odd number
+                result = (result * _base) % _modulus;
+            _exponent = _exponent >> 1; //divide by 2
+            _base = (_base * _base) % _modulus;
+        }
+        return result;
+    }
+
+    function fastModExp(uint256 _base, uint256 _exponent, uint256 _modulus) pure public returns (uint256) {
+        uint8[] memory binaryArr = intToBinary(_exponent);
+        return divideAndConquer(_base, binaryArr, _modulus);
     }
 
     // Dynamic programming to prevent expensive exponentiation and prevent overflow
-    function divideAndConquer(uint256 base, uint8[] memory binaryArr, uint256 _modulus) pure public returns (uint256 result) {
-        uint256[] memory memo = new uint256[](binaryArr.length);
-        memo[0] = (base ** 1) % _modulus;
+    function divideAndConquer(uint256 _base, uint8[] memory binaryArr, uint256 _modulus) public pure returns (uint256 result) {
+        if (_base == 0) return 0;
 
-        // Create memoized array of base^(powers of 2)
-        for (uint256 i = 1; i < binaryArr.length; i++) {
-            memo[i] = ((memo[i - 1] * memo[i - 1]) % _modulus);
-        }
+        uint256[] memory memo = createMemoArrayOfPowersOfTwo(_base, binaryArr, _modulus);
 
         // Zero out powers of two not present in binary array
         for (uint256 i = 0; i < binaryArr.length; i++) {
             memo[i] = binaryArr[i] * memo[i];
         }
 
-        result = memo[0] != 0 ? memo[0] : 1;
+        result = 1;
 
         // Multiply memoized elements to get base^(∑(elements in memo) = exponent) % modulus
-        for (uint256 i = 1; i < memo.length; i++) {
+        for (uint256 i = 0; i < memo.length; i++) {
             if (memo[i] != 0) {
                 result = (result * memo[i]) % _modulus;
             }
@@ -202,15 +214,25 @@ contract Wordle {
         return result;
     }
 
-    // Outputs to binary array in a "little-endian"-like way, i.e. 30 = [0, 1, 1, 1, 1]
-    function intToBinary(uint256 n) pure public returns (uint8[] memory output) {
-        require(n < 1024);
+    function createMemoArrayOfPowersOfTwo(uint256 _base, uint8[] memory binaryArr, uint256 _modulus) public pure returns (uint256[] memory memo) {
+        memo = new uint256[](binaryArr.length);
+        memo[binaryArr.length - 1] = (_base ** 1) % _modulus;
 
+        // Create memoized array of base^(powers of 2) % modulus
+        for (uint256 i = binaryArr.length; i > 1; i--) {
+            memo[i - 2] = ((memo[i - 1] * memo[i - 1]) % _modulus);
+        }
+
+        return memo;
+    }
+
+    // Outputs to binary array in a "big-endian"-like way, i.e. 30 = [1, 1, 1, 1, 0]
+    function intToBinary(uint256 n) pure public returns (uint8[] memory output) {
         uint binLength = log2ceil(n);
         output = new uint8[](binLength);
 
-        for (uint8 i = 0; i <= binLength; i++) {
-            output[binLength - i] = (n % 2 == 1) ? 1 : 0;
+        for (uint256 i = binLength; i > 0; i--) {
+            output[i-1] = (n % 2 == 1) ? 1 : 0;
             n /= 2;
         }
 
