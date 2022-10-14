@@ -85,7 +85,7 @@ contract Wordle {
         emit CreatedNewWordlePuzzle(_accumulator, _modulus, _witnesses);
     }
 
-    function makeAttempt(uint256[] calldata guesses) public WordleMustBeReady payable returns (bool[2][] memory answer, bool isSolved) {
+    function makeAttempt(uint256[] calldata guesses) public WordleMustBeReady payable returns (bool[] memory answer, bool isSolved) {
         if (msg.value < FEE) revert PlayerMustPayFeeToPlay(FEE);
         if (playerAttempts[wordlePuzzleNo][msg.sender] > MAX_ATTEMPTS)
             revert PlayerHasMadeTooManyAttempts("Player has maxed out their attempts for this puzzle. Wait for the next Wordle to play again.");
@@ -93,17 +93,16 @@ contract Wordle {
         bool playerHasSolvedPuzzle = playerPuzzleNumberSolved[msg.sender][wordlePuzzleNo];
         if (playerHasSolvedPuzzle == true) revert PlayerHasAlreadySolvedWordle();
 
-        answer = new bool[2][](guesses.length);
+        answer = new bool[](guesses.length);
 
-        for (uint8 i = 0; i < guesses.length; i++) {
+        for (uint8 i = 0; i < 5; i++) {
+            bool isInTheCorrectPosition = verifyPosition(i, guesses[i]);
+            answer[i] = isInTheCorrectPosition;
+        }
+
+        for (uint8 i = 5; i < guesses.length; i++) {
             bool isMember = verifyMembership(guesses[i]);
-            bool isInTheCorrectPosition = false;
-
-            if (isMember) {
-                isInTheCorrectPosition = verifyPosition(i, guesses[i]);
-            }
-
-            answer[i] = [isMember, isInTheCorrectPosition];
+            answer[i] = isMember;
         }
 
         playerAttempts[wordlePuzzleNo][msg.sender]++;
@@ -158,17 +157,12 @@ contract Wordle {
         return false;
     }
 
-    function checkIfSolved(bool[2][] memory _answer) public pure returns (bool isAllTrue) {
+    function checkIfSolved(bool[] memory _answer) public pure returns (bool isAllTrue) {
         isAllTrue = true;
 
         for (uint8 i = 0; i < _answer.length; i++) {
-            for (uint8 j = 0; j < _answer[i].length; j++) {
-                if (!_answer[i][j]) {
-                    isAllTrue = false;
-                    break;
-                }
-            }
-            if (!isAllTrue) {
+            if (!_answer[i]) {
+                isAllTrue = false;
                 break;
             }
         }
