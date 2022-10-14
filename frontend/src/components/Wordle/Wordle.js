@@ -6,7 +6,7 @@ import "./Wordle.scss";
 export default function Wordle({previousStates, currentState, updateLetter, attempts}) {
     let attemptsLeft = 5 - attempts;
     
-    const generatedPreviousAttempts = () => {
+    const generatedPreviousAttempts = React.useMemo(() => {
         return previousStates.map((states, index) =>
             <div key={index}>
                 {states.map((letter, j) =>
@@ -16,7 +16,7 @@ export default function Wordle({previousStates, currentState, updateLetter, atte
                             value={letter.value} />)}
             </div>
         );
-    };
+    }, [attempts]);
     
     const generateDivs = () => {
         let arr = [];
