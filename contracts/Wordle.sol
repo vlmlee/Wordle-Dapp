@@ -90,7 +90,9 @@ contract Wordle {
 
     function makeAttempt(uint256[] calldata guesses) public WordleMustBeReady payable returns (bool[] memory answer, bool isSolved) {
         if (msg.value < FEE) revert PlayerMustPayFeeToPlay(FEE);
-        if (playerAttempts[wordlePuzzleNo][msg.sender] > MAX_ATTEMPTS)
+
+        uint8 attemptNumber = playerAttempts[wordlePuzzleNo][msg.sender];
+        if (attemptNumber > MAX_ATTEMPTS)
             revert PlayerHasMadeTooManyAttempts("Player has maxed out their attempts for this puzzle. Wait for the next Wordle to play again.");
 
         bool playerHasSolvedPuzzle = playerPuzzleNumberSolved[msg.sender][wordlePuzzleNo];
@@ -108,6 +110,13 @@ contract Wordle {
             answer[i] = isMember;
         }
 
+        if ((playerPuzzleSolvedCount[msg.sender] == 0) && !playerHasAlreadyPlayed(msg.sender)) {
+            players.push(msg.sender);
+        }
+
+        uint256[][] storage attemptsArr = currentAttempts[msg.sender];
+        attemptsArr.push(guesses);
+
         playerAttempts[wordlePuzzleNo][msg.sender]++;
         emit PlayerMadeAttempt(msg.sender, playerAttempts[wordlePuzzleNo][msg.sender], wordlePuzzleNo);
 
@@ -122,7 +131,19 @@ contract Wordle {
     }
 
     function resetAllAttempts() public MustBeOwner {
+        for (uint256 i = 0; i < players.length; i++) {
+            for (uint256 j = 0; j < currentAttempts[players[i]].length; j++) {
+                delete currentAttempts[players[i]][j];
+            }
+        }
         wordlePuzzleNo++;
+    }
+
+    function playerHasAlreadyPlayed(address _player) internal view returns (bool found) {
+        found = false;
+        for (uint256 i = 0; i < players.length; i++) {
+            if (players[i] == _player) found = true;
+        }
     }
 
     function withdraw() public MustBeOwner {
