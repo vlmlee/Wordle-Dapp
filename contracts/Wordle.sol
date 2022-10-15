@@ -19,8 +19,8 @@ contract Wordle {
     uint256 public accumulator;
     uint256 public modulus;
     uint256[] public witnesses;
-    uint8 public constant MAX_ATTEMPTS = 6;
-    uint256 public constant FEE = 700000 gwei;
+    uint8 public constant MAX_ATTEMPTS = 5;
+    uint256 public constant FEE = 700_000 gwei;
     ILeaderboard public leaderboard;
 
     event WithdrawalSuccessful(uint256 _value);
