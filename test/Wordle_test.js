@@ -79,7 +79,7 @@ describe("Wordle contract", function () {
                 .to.emit(instance, "WithdrawalSuccessful")
                 .withArgs(amount);
 
-            expect(await provider.getBalance(instance.address)).to.equal(BigNumber.from("0"));
+            expect(await provider.getBalance(instance.address), "Balance should be 0").to.equal(BigNumber.from("0"));
         });
 
         it("should not allow anyone other than the owner to withdraw funds", async function () {
@@ -130,10 +130,10 @@ describe("Wordle contract", function () {
             const {instance, owner} = await loadFixture(deployWordleFixture);
 
             await instance.resetAllAttempts();
-            expect(await instance.wordlePuzzleNo()).to.equal(1);
+            expect(await instance.wordlePuzzleNo(), "Puzzle number should be 1").to.equal(1);
 
             await instance.resetAllAttempts();
-            expect(await instance.wordlePuzzleNo()).to.equal(2);
+            expect(await instance.wordlePuzzleNo(), "Puzzle number should be 2").to.equal(2);
         });
 
         it("should update the Wordle puzzle number", async function () {
@@ -141,7 +141,7 @@ describe("Wordle contract", function () {
 
             await instance.resetAllAttempts();
 
-            expect(await instance.wordlePuzzleNo()).to.equal(1);
+            expect(await instance.wordlePuzzleNo(), "Puzzle number should be 1").to.equal(1);
         });
 
         it("should only allow the contract owner to create a new Wordle", async function () {
@@ -205,14 +205,14 @@ describe("Wordle contract", function () {
             const secondAttempt = await instance.callStatic.makeAttempt(newGuess, {value: ethers.utils.parseEther("0.0007")});
             // console.log(secondAttempt);
 
-            expect(secondAttempt.answer).to.deep.equal(
+            expect(secondAttempt.answer, "Returned answer did not equal expected answer").to.deep.equal(
                 [
                     true, false, false, true, false, // 'r' and 'l' are in the right position
                     true, false, true, true, false // 'r' is in solution, 'e' is not in solution, 'a' is in solution, 'l' is in solution, 's' is not in solution
                 ]
             );
 
-            expect(secondAttempt.isSolved).to.equal(false); // Is not solved yet.
+            expect(secondAttempt.isSolved, "Second attempt should not be solved yet").to.equal(false); // Is not solved yet.
         });
 
         it("should emit PlayerMadeAttempt even when a player completes an attempt", async function () {
@@ -255,7 +255,61 @@ describe("Wordle contract", function () {
                 .to.emit(instance, "PlayerMadeAttempt")
                 .withArgs(owner.address, ++attempts, wordlePuzzleNo);
 
-            expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
+            expect(await instance.playerAttempts(wordlePuzzleNo, owner.address), "Number of attempts does not equal expected value").to.equal(attempts);
+
+            const attempt = convertToGuess([
+                "r0",
+                "a1",
+                "i2",
+                "l3",
+                "s4"
+            ]);
+
+            await expect(instance.makeAttempt(attempt, {value: ethers.utils.parseEther("0.0007")}))
+                .to.emit(instance, "PlayerMadeAttempt")
+                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+
+            expect(await instance.playerAttempts(wordlePuzzleNo, owner.address), "Number of attempts does not equal expected value").to.equal(attempts);
+        });
+
+        it("should revert with PlayerMustPayFeeToPlay if the player does not cover the fee", async function () {
+            const {instance, addr1} = await loadFixture(deployWordleWithPuzzleSet);
+
+            const wordlePuzzleNo = await instance.wordlePuzzleNo();
+            expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
+
+            const guesses = convertToGuess([
+                "a0",
+                "g1",
+                "r2",
+                "e3",
+                "e4"
+            ]);
+
+            await expect(instance.connect(addr1).makeAttempt(guesses, {value: ethers.utils.parseEther("0")}))
+                .to.be.revertedWithCustomError(instance, "PlayerMustPayFeeToPlay")
+        });
+
+        it("should revert with PlayerHasMadeTooManyAttempts if the player attempts the puzzle more times than the allowed limit", async function () {
+            const {instance, owner} = await loadFixture(deployWordleWithPuzzleSet);
+
+            const wordlePuzzleNo = await instance.wordlePuzzleNo();
+            let attempts = 0;
+            expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
+
+            const newGuess = convertToGuess([
+                "r0",
+                "e1",
+                "a2",
+                "l3",
+                "s4"
+            ]);
+            // console.log("Guesses: ", newGuess);
+
+            await expect(instance.makeAttempt(newGuess, {value: ethers.utils.parseEther("0.0007")}))
+                .to.emit(instance, "PlayerMadeAttempt")
+                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+            expect(await instance.playerAttempts(wordlePuzzleNo, owner.address), "Number of attempts does not equal expected value").to.equal(attempts);
 
             const secondAttempt = convertToGuess([
                 "r0",
@@ -268,26 +322,152 @@ describe("Wordle contract", function () {
             await expect(instance.makeAttempt(secondAttempt, {value: ethers.utils.parseEther("0.0007")}))
                 .to.emit(instance, "PlayerMadeAttempt")
                 .withArgs(owner.address, ++attempts, wordlePuzzleNo);
-
             expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
+
+            await expect(instance.makeAttempt(secondAttempt, {value: ethers.utils.parseEther("0.0007")}))
+                .to.emit(instance, "PlayerMadeAttempt")
+                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+            expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
+
+            await expect(instance.makeAttempt(secondAttempt, {value: ethers.utils.parseEther("0.0007")}))
+                .to.emit(instance, "PlayerMadeAttempt")
+                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+            expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
+
+            await expect(instance.makeAttempt(secondAttempt, {value: ethers.utils.parseEther("0.0007")}))
+                .to.emit(instance, "PlayerMadeAttempt")
+                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+            expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
+
+            await expect(instance.makeAttempt(secondAttempt, {value: ethers.utils.parseEther("0.0007")}))
+                .to.emit(instance, "PlayerMadeAttempt")
+                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+            expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
+
+            await expect(instance.makeAttempt(secondAttempt, {value: ethers.utils.parseEther("0.0007")}))
+                .to.be.revertedWithCustomError(instance, "PlayerHasMadeTooManyAttempts");
         });
     });
 
     describe("Solving a Wordle puzzle", async function () {
         it("should be able to verify that a Wordle was solved by a player", async function () {
+            const {instance, addr1} = await loadFixture(deployWordleWithPuzzleSet);
 
+            const wordlePuzzleNo = await instance.wordlePuzzleNo();
+            expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
+
+            const newGuess = convertToGuess([
+                "r0",
+                "e1",
+                "a2",
+                "l3",
+                "s4"
+            ]);
+            // console.log("Guesses: ", newGuess);
+
+            await instance.connect(addr1).makeAttempt(newGuess, {value: ethers.utils.parseEther("0.0007")}); // actual
+
+            // const attempt = await instance.callStatic.makeAttempt(newGuess, {value: ethers.utils.parseEther("0.0007")}); // mocked
+            // expect(attempt.answer, "Returned answer did not equal expected answer").to.deep.equal(
+            //     [
+            //         true, false, false, true, false, // 'r' and 'l' are in the right position
+            //         true, false, true, true, false // 'r' is in solution, 'e' is not in solution, 'a' is in solution, 'l' is in solution, 's' is not in solution
+            //     ]
+            // );
+            //
+            // expect(attempt.isSolved, "Puzzle should not be solved yet").to.equal(false); // Is not solved yet.
+            expect(await instance.playerPuzzleNumberSolved(addr1.address, wordlePuzzleNo)).to.equal(false);
+
+            const correctGuess = convertToGuess([
+                "r0",
+                "a1",
+                "l2",
+                "l3",
+                "y4"
+            ]);
+
+            await instance.connect(addr1).makeAttempt(correctGuess, {value: ethers.utils.parseEther("0.0007")});
+
+            // const secondAttempt = await instance.callStatic.makeAttempt(correctGuess, {from: addr1.address, value: ethers.utils.parseEther("0.0007")});
+            // expect(secondAttempt.answer).to.deep.equal(
+            //     [
+            //         true, true, true, true, true,
+            //         true, true, true, true
+            //     ]
+            // );
+            //
+            // expect(secondAttempt.isSolved).to.equal(true);
+            expect(await instance.playerPuzzleNumberSolved(addr1.address, wordlePuzzleNo), "Wordle puzzle should have been solved").to.equal(true);
         });
 
         it("should emit PlayerSolvedWordle event when the player has solved the Wordle", async function () {
+            const {instance, addr1} = await loadFixture(deployWordleWithPuzzleSet);
 
+            const wordlePuzzleNo = await instance.wordlePuzzleNo();
+            expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
+
+            const correctGuess = convertToGuess([
+                "r0",
+                "a1",
+                "l2",
+                "l3",
+                "y4"
+            ]);
+
+            await expect(instance.connect(addr1).makeAttempt(correctGuess, {value: ethers.utils.parseEther("0.0007")}))
+                .to.emit(instance, "PlayerSolvedWordle");
+
+            expect(await instance.playerPuzzleNumberSolved(addr1.address, wordlePuzzleNo), "Wordle puzzle should have been solved").to.equal(true);
         });
 
-        it("should revert if a player has already solved the Wordle", async function () {
+        it("should revert if a player attempts to solve an already solved Wordle puzzle", async function () {
+            const {instance, addr1} = await loadFixture(deployWordleWithPuzzleSet);
 
+            const wordlePuzzleNo = await instance.wordlePuzzleNo();
+            expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
+
+            const correctGuess = convertToGuess([
+                "r0",
+                "a1",
+                "l2",
+                "l3",
+                "y4"
+            ]);
+
+            await expect(instance.connect(addr1).makeAttempt(correctGuess, {value: ethers.utils.parseEther("0.0007")}))
+                .to.emit(instance, "PlayerSolvedWordle");
+
+            const anyGuess = convertToGuess([
+                "r0",
+                "e1",
+                "a2",
+                "l3",
+                "s4"
+            ]);
+
+            await expect(instance.connect(addr1).makeAttempt(anyGuess, {value: ethers.utils.parseEther("0.0007")}))
+                .to.be.revertedWithCustomError(instance, "PlayerHasAlreadySolvedWordle");
         });
 
         it("should show the number of Wordles solved by a player has increased", async function () {
+            const {instance, addr1} = await loadFixture(deployWordleWithPuzzleSet);
 
+            const wordlePuzzleNo = await instance.wordlePuzzleNo();
+            expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
+            const numOfPuzzleSolved = await instance.playerPuzzleSolvedCount(addr1.address);
+
+            const correctGuess = convertToGuess([
+                "r0",
+                "a1",
+                "l2",
+                "l3",
+                "y4"
+            ]);
+
+            await expect(instance.connect(addr1).makeAttempt(correctGuess, {value: ethers.utils.parseEther("0.0007")}))
+                .to.emit(instance, "PlayerSolvedWordle");
+
+            expect(await instance.playerPuzzleSolvedCount(addr1.address), "Number of puzzle solved should have increased").to.equal(numOfPuzzleSolved + 1);
         });
     });
 
@@ -309,7 +489,7 @@ describe("Wordle contract", function () {
                 ];
 
                 const isSolved = await instance.checkIfSolved(mockAnswer);
-                expect(isSolved).to.equal(true);
+                expect(isSolved, "Should be solved").to.equal(true);
             });
 
             it("should return false if at least one element is false", async function () {
@@ -343,8 +523,8 @@ describe("Wordle contract", function () {
 
                 const isSolved = await instance.checkIfSolved(mockAnswer);
                 const isSolved2 = await instance.checkIfSolved(mockAnswer2);
-                expect(isSolved).to.equal(false);
-                expect(isSolved2).to.equal(false);
+                expect(isSolved, "Should be solved").to.equal(false);
+                expect(isSolved2, "Should not be solved").to.equal(false);
             });
         });
 
@@ -466,22 +646,22 @@ describe("Wordle contract", function () {
 
                 const testSet = [
                     {
-                        base: Math.floor(Math.random() * 256),
+                        base: Math.floor(2**10 * Math.random() * 256),
                         exp: primes[Math.floor(Math.random() * primes.length)],
                         mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
                     },
                     {
-                        base: Math.floor(Math.random() * 256),
+                        base: Math.floor(2**10 * Math.random() * 256),
                         exp: primes[Math.floor(Math.random() * primes.length)],
                         mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
                     },
                     {
-                        base: Math.floor(Math.random() * 256),
+                        base: Math.floor(2**10 * Math.random() * 256),
                         exp: primes[Math.floor(Math.random() * primes.length)],
                         mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
                     },
                     {
-                        base: Math.floor(Math.random() * 256),
+                        base: Math.floor(2**10 * Math.random() * 256),
                         exp: primes[Math.floor(Math.random() * primes.length)],
                         mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
                     },
@@ -500,6 +680,8 @@ describe("Wordle contract", function () {
                 const {instance} = await loadFixture(deployWordleFixture);
 
                 const testSet = [
+                    2,
+                    1,
                     30,
                     1234,
                     44,
