@@ -168,10 +168,40 @@ describe("Wordle contract", function () {
                 "e3",
                 "e4"
             ]);
+            // console.log("Guesses: ", guesses);
 
-            console.log("Guesses: ", guesses);
+            const attemptTx = await instance.callStatic.makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            // console.log(attemptTx);
 
-            // const attempt = await instance.makeAttempt([]);
+            expect(attemptTx.answer).to.deep.equal(
+                [
+                    false, false, false, false, false, // none of the letters are in the right position
+                    true, false, true, false // 'a' is in solution, 'g' is not in solution, 'r' is in solution, 'e' is not in solution
+                ]
+            );
+
+            expect(attemptTx.isSolved).to.equal(false); // Is not solved yet.
+
+            const newGuess = convertToGuess([
+                "r0",
+                "e1",
+                "a2",
+                "l3",
+                "s4"
+            ]);
+            // console.log("Guesses: ", newGuess);
+
+            const secondAttempt = await instance.callStatic.makeAttempt(newGuess, {value: ethers.utils.parseEther("0.0007")});
+            // console.log(secondAttempt);
+
+            expect(secondAttempt.answer).to.deep.equal(
+                [
+                    true, false, false, true, false, // 'r' and 'l' are in the right position
+                    true, false, true, true, false // 'r' is in solution, 'e' is not in solution, 'a' is in solution, 'l' is in solution, 's' is not in solution
+                ]
+            );
+
+            expect(secondAttempt.isSolved).to.equal(false); // Is not solved yet.
         });
 
         it("should verify the position of a guess in the solution", async function () {
