@@ -797,7 +797,7 @@ describe("Wordle contract", function () {
             it("should give the correct result for the ceiling of log base 2", async function () {
                 const {instance} = await loadFixture(deployWordleFixture);
 
-                const testSet = [20, 5, 1239, 652, 4097, 3, 551, 68, 90, 329, 11334];
+                const testSet = [2, 20, 5, 1239, 652, 4097, 3, 551, 68, 90, 329, 11334];
 
                 for (let i = 0; i < testSet.length; i++) {
                     expect(await instance.log2ceil(testSet[i])).to.equal(Math.ceil(Math.log2(testSet[i])));
