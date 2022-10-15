@@ -32,6 +32,9 @@ contract Wordle {
     mapping(uint => mapping(address => uint8)) public playerAttempts;
     uint256 public playerAttemptsLength;
 
+    mapping(address => uint256[][]) public currentAttempts;
+    address[] public players;
+
     mapping(address => uint256) public playerPuzzleSolvedCount;
     mapping(address => mapping(uint256 => bool)) public playerPuzzleNumberSolved;
     uint256 public playerPuzzleSolvedCountLength;
