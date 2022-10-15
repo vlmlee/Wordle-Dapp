@@ -36,19 +36,18 @@ describe("Wordle contract", function () {
             const [letter, position] = letterPosition.split("");
             return letterToPrime(letter, position);
         });
+        // console.log("Primes: ", _primes);
 
-        console.log("Primes: ", _primes);
-
-        const generator = Math.floor(Math.random() * 2 ** 16);
-        console.log("Generator: ", generator);
+        const generator = Math.floor(2**10 + Math.random() * 2 ** 16); // Possible to hit 1 or 0 here so we add 2**10 as a floor
+        // console.log("Generator: ", generator);
         const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
-        console.log("Modulus: ", _modulus);
+        // console.log("Modulus: ", _modulus);
 
         const _accumulator = calculateAccumulator(_primes, generator, _modulus);
-        console.log("Accumulator: ", _accumulator);
+        // console.log("Accumulator: ", _accumulator);
 
         const witnesses = calculateWitnesses(_primes, generator, _modulus);
-        console.log("Witnesses: ", witnesses);
+        // console.log("Witnesses: ", witnesses);
 
         await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
 
@@ -237,15 +236,40 @@ describe("Wordle contract", function () {
         });
 
         it("should increase a player's attempt count after they complete an attempt", async function () {
+            const {instance, owner} = await loadFixture(deployWordleWithPuzzleSet);
 
-        });
+            const wordlePuzzleNo = await instance.wordlePuzzleNo();
+            let attempts = 0;
+            expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
 
-        it("should return an array of answers pertaining to each guess supplied", async function () {
+            const newGuess = convertToGuess([
+                "r0",
+                "e1",
+                "a2",
+                "l3",
+                "s4"
+            ]);
+            // console.log("Guesses: ", newGuess);
 
-        });
+            await expect(instance.makeAttempt(newGuess, {value: ethers.utils.parseEther("0.0007")}))
+                .to.emit(instance, "PlayerMadeAttempt")
+                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
 
-        it("should return a boolean value of whether the Wordle was solved or not", async function () {
+            expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
 
+            const secondAttempt = convertToGuess([
+                "r0",
+                "a1",
+                "i2",
+                "l3",
+                "s4"
+            ]);
+
+            await expect(instance.makeAttempt(secondAttempt, {value: ethers.utils.parseEther("0.0007")}))
+                .to.emit(instance, "PlayerMadeAttempt")
+                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+
+            expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
         });
     });
 
@@ -339,23 +363,23 @@ describe("Wordle contract", function () {
                     "l5",
                     "y5"
                 ];
+
                 const _primes = solution.map(letterPosition => {
                     const [letter, position] = letterPosition.split("");
                     return letterToPrime(letter, position);
                 });
-
-                console.log("Primes: ", _primes);
+                // console.log("Primes: ", _primes);
 
                 const generator = Math.floor(Math.random() * 2 ** 16);
-                console.log("Generator: ", generator);
+                // console.log("Generator: ", generator);
                 const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
-                console.log("Modulus: ", _modulus);
+                // console.log("Modulus: ", _modulus);
 
                 const _accumulator = calculateAccumulator(_primes, generator, _modulus);
-                console.log("Accumulator: ", _accumulator);
+                // console.log("Accumulator: ", _accumulator);
 
                 const witnesses = calculateWitnesses(_primes, generator, _modulus);
-                console.log("Witnesses: ", witnesses);
+                // console.log("Witnesses: ", witnesses);
 
                 await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
 
@@ -396,19 +420,18 @@ describe("Wordle contract", function () {
                     const [letter, position] = letterPosition.split("");
                     return letterToPrime(letter, position);
                 });
-
-                console.log("Primes: ", _primes);
+                // console.log("Primes: ", _primes);
 
                 const generator = Math.floor(Math.random() * 2 ** 16);
-                console.log("Generator: ", generator);
+                // console.log("Generator: ", generator);
                 const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
-                console.log("Modulus: ", _modulus);
+                // console.log("Modulus: ", _modulus);
 
                 const _accumulator = calculateAccumulator(_primes, generator, _modulus);
-                console.log("Accumulator: ", _accumulator);
+                // console.log("Accumulator: ", _accumulator);
 
                 const witnesses = calculateWitnesses(_primes, generator, _modulus);
-                console.log("Witnesses: ", witnesses);
+                // console.log("Witnesses: ", witnesses);
 
                 await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
 
