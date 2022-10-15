@@ -125,15 +125,64 @@ describe("Wordle contract", function () {
                 .to.emit(instance, "CreatedNewWordlePuzzle");
         });
 
-        // TODO:
         it("should reset the attempts stored in the contract", async function () {
-            const {instance, owner} = await loadFixture(deployWordleFixture);
+            const {instance, addr1} = await loadFixture(deployWordleFixture);
+
+            const solution = [
+                "r0",
+                "A1",
+                "l2",
+                "L3",
+                "y4",
+                "r5",
+                "a5",
+                "l5",
+                "y5"
+            ];
+            const _primes = solution.map(letterPosition => {
+                const [letter, position] = letterPosition.split("");
+                return letterToPrime(letter, position);
+            });
+            // console.log("Primes: ", _primes);
+
+            const generator = Math.floor(2**10 + Math.random() * 2 ** 16); // Possible to hit 1 or 0 here so we add 2**10 as a floor
+            // console.log("Generator: ", generator);
+            const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
+            // console.log("Modulus: ", _modulus);
+
+            const _accumulator = calculateAccumulator(_primes, generator, _modulus);
+            // console.log("Accumulator: ", _accumulator);
+
+            const witnesses = calculateWitnesses(_primes, generator, _modulus);
+            // console.log("Witnesses: ", witnesses);
+
+            await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
+
+            let wordlePuzzleNo = await instance.wordlePuzzleNo();
+            expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
+            let attempts = 0;
+            expect(await instance.playerAttempts(wordlePuzzleNo, addr1.address), "").to.equal(attempts);
+
+            const correctGuess = convertToGuess([
+                "r0",
+                "a1",
+                "l2",
+                "l3",
+                "y4"
+            ]);
+
+            await instance.connect(addr1).makeAttempt(correctGuess, {value: ethers.utils.parseEther("0.0007")});
+
+            expect(await instance.playerPuzzleNumberSolved(addr1.address, wordlePuzzleNo), "Wordle puzzle should have been solved").to.equal(true);
+            expect(await instance.playerAttempts(wordlePuzzleNo, addr1.address), "Attempt should have incremented").to.equal(++attempts);
 
             await instance.resetAllAttempts();
-            expect(await instance.wordlePuzzleNo(), "Puzzle number should be 1").to.equal(1);
+            wordlePuzzleNo = await instance.wordlePuzzleNo();
+            expect(await instance.playerAttempts(wordlePuzzleNo, addr1.address), "Puzzle should have resetted attempts").to.equal(0);
 
-            await instance.resetAllAttempts();
-            expect(await instance.wordlePuzzleNo(), "Puzzle number should be 2").to.equal(2);
+            await instance.connect(addr1).makeAttempt(correctGuess, {value: ethers.utils.parseEther("0.0007")});
+            expect(await instance.playerPuzzleNumberSolved(addr1.address, wordlePuzzleNo), "Wordle puzzle should have been solved").to.equal(true);
+            expect(await instance.playerAttempts(wordlePuzzleNo, addr1.address), "Attempt should have reset and now equal 1").to.equal(1);
         });
 
         it("should update the Wordle puzzle number", async function () {
