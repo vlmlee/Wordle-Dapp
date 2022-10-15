@@ -3,43 +3,7 @@ const {loadFixture} = require("@nomicfoundation/hardhat-network-helpers");
 const {ethers, waffle} = require("hardhat");
 const {BigNumber} = require("ethers");
 
-let primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911]
-let alphabet = "abcdefghijklmnopqrstuvwxyz";
-let letterToPrime = (letter, index) => primes[(alphabet.length * index) + alphabet.indexOf(letter.toLowerCase())];
-
-let calculateAccumulator = (solution, base, _modulus) => {
-    return solution.reduce((acc, cur, i) => {
-        if (i === 0) return acc;
-        acc = powerMod(acc, cur, _modulus);
-        return acc;
-    }, powerMod(base, solution[0], _modulus));
-};
-
-let calculateWitnesses = (solution, base, _modulus) => {
-    return solution.map((p, i, array) => {
-        const _primesToCalculate = array.filter((x, j) => j !== i);
-
-        return _primesToCalculate.reduce((acc, cur, j) => {
-            if (j === 0) return acc;
-            acc = powerMod(acc, cur, _modulus);
-            return acc;
-        }, powerMod(base, _primesToCalculate[0], _modulus));
-    });
-}
-
-// calculates base^exponent % modulus
-function powerMod(base, exponent, modulus) {
-    if (modulus === 1) return 0;
-    var result = 1;
-    base = base % modulus;
-    while (exponent > 0) {
-        if (exponent % 2 === 1)  //odd number
-            result = (result * base) % modulus;
-        exponent = exponent >> 1; //divide by 2
-        base = (base * base) % modulus;
-    }
-    return result;
-}
+const {primes, alphabet, letterToPrime, calculateAccumulator, calculateWitnesses, powerMod, convertToGuess} = require("../helpers/wordle-helpers");
 
 describe("Wordle contract", function () {
     async function deployWordleFixture() {
@@ -47,6 +11,46 @@ describe("Wordle contract", function () {
         const [owner, addr1, addr2] = await ethers.getSigners();
         const instance = await wordleContract.deploy();
         await instance.deployed();
+
+        return {wordleContract, instance, owner, addr1, addr2};
+    }
+
+    async function deployWordleWithPuzzleSet() {
+        const wordleContract = await ethers.getContractFactory("Wordle");
+        const [owner, addr1, addr2] = await ethers.getSigners();
+        const instance = await wordleContract.deploy();
+        await instance.deployed();
+
+        const solution = [
+            "r0",
+            "A1",
+            "l2",
+            "L3",
+            "y4",
+            "r5",
+            "a5",
+            "l5",
+            "y5"
+        ];
+        const _primes = solution.map(letterPosition => {
+            const [letter, position] = letterPosition.split("");
+            return letterToPrime(letter, position);
+        });
+
+        console.log("Primes: ", _primes);
+
+        const generator = Math.floor(Math.random() * 2 ** 16);
+        console.log("Generator: ", generator);
+        const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
+        console.log("Modulus: ", _modulus);
+
+        const _accumulator = calculateAccumulator(_primes, generator, _modulus);
+        console.log("Accumulator: ", _accumulator);
+
+        const witnesses = calculateWitnesses(_primes, generator, _modulus);
+        console.log("Witnesses: ", witnesses);
+
+        await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
 
         return {wordleContract, instance, owner, addr1, addr2};
     }
@@ -155,7 +159,19 @@ describe("Wordle contract", function () {
 
     describe("Attempts on a Wordle puzzle", async function () {
         it("should verify the membership of a guess in the solution", async function () {
+            const {instance} = await loadFixture(deployWordleWithPuzzleSet);
 
+            const guesses = convertToGuess([
+                "a0",
+                "g1",
+                "r2",
+                "e3",
+                "e4"
+            ]);
+
+            console.log("Guesses: ", guesses);
+
+            // const attempt = await instance.makeAttempt([]);
         });
 
         it("should verify the position of a guess in the solution", async function () {
@@ -467,6 +483,14 @@ describe("Wordle contract", function () {
                                 BigNumber.from("55"), // 44^4 mod 99
                                 BigNumber.from("55"), // 44^2 mod 99
                                 BigNumber.from("44") // 44^1 mod 99
+                            ]
+                        },
+                        {
+                            base: 2,
+                            exponent: 1,
+                            modulus: 10,
+                            solution: [
+                                BigNumber.from("2") // 2^1 mod 10
                             ]
                         }
                     ];
