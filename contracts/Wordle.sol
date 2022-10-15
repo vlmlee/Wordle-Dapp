@@ -230,8 +230,8 @@ contract Wordle {
             return output;
         } else if (n == 2) {
             output = new uint8[](2);
-            output[0] = 0;
-            output[1] = 1;
+            output[0] = 1;
+            output[1] = 0;
             return output;
         }
 
