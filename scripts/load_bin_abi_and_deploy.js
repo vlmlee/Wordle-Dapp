@@ -2,13 +2,15 @@
 const ethers = require('ethers');
 const fs = require('fs');
 
+require('dotenv').config();
+
 //Read bin and abi file to object; names of the solcjs-generated files renamed
 bytecode = fs.readFileSync('storage.bin').toString();
 abi = JSON.parse(fs.readFileSync('storage.abi').toString());
 
 //to create 'signer' object;here 'account'
-const mnemonic = "<see-phrase>" // seed phrase for your Metamask account
-const provider = new ethers.providers.WebSocketProvider("wss://bsc.getblock.io/testnet/?api_key=<your-api-key>");
+const mnemonic = process.env.MNEMONIC // seed phrase for your Metamask account
+const provider = new ethers.providers.WebSocketProvider(process.env.INFURA_URL + process.env.INFURA_API_KEY);
 const wallet = ethers.Wallet.fromMnemonic(mnemonic);
 const account = wallet.connect(provider);
 
