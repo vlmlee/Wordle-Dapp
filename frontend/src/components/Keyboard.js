@@ -1,6 +1,6 @@
 import React from "react";
 import Key from "./Key";
-import Constants from "./Constants";
+import Constants from "../helpers/Constants";
 import "../stylesheets/Keyboard.scss";
 import {flatten} from "lodash";
 

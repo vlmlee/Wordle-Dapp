@@ -2,7 +2,7 @@ import React, {useMemo} from "react";
 import {useState, useEffect} from "react";
 import Wordle from "./components/Wordle";
 import Keyboard from "./components/Keyboard";
-import Constants from "./components/Constants";
+import Constants from "./helpers/Constants";
 import "./stylesheets/WordleContainer.scss";
 import {uniq, isEmpty} from "lodash";
 import {isWordInWordBank, checkSolution} from "./helpers/check-solution";
