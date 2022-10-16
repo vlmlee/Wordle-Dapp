@@ -65,6 +65,14 @@ contract Wordle {
 
     receive() external payable {}
 
+    function getCurrentAttempts(address _player) external view returns (uint256[][] memory) {
+        return currentAttempts[_player];
+    }
+
+    function getPlayers() external view returns (address[] memory) {
+        return players;
+    }
+
     function setLeaderboardAddress(address _addr) external MustBeOwner payable {
         leaderboard = ILeaderboard(_addr);
     }
@@ -132,9 +140,7 @@ contract Wordle {
 
     function resetAllAttempts() public MustBeOwner {
         for (uint256 i = 0; i < players.length; i++) {
-            for (uint256 j = 0; j < currentAttempts[players[i]].length; j++) {
-                delete currentAttempts[players[i]][j];
-            }
+            delete currentAttempts[players[i]];
         }
         wordlePuzzleNo++;
     }
