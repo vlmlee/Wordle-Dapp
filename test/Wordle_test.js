@@ -205,9 +205,128 @@ describe("Wordle contract", function () {
             await expect(instance.connect(addr1).createNewWordlePuzzle(mockPuzzle.accumulator, mockPuzzle.modulus, mockPuzzle.witnesses))
                 .to.be.revertedWithCustomError(instance, "PlayerIsNotOwner");
         });
+
+        it("should be able to reset all current attempts made by players", async function () {
+            const {instance, owner, addr1, addr2} = await loadFixture(deployWordleWithPuzzleSet);
+
+            const wordlePuzzleNo = await instance.wordlePuzzleNo();
+            expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
+
+            const guesses = convertToGuess([
+                "a0",
+                "g1",
+                "r2",
+                "e3",
+                "e4"
+            ]);
+            // console.log("Guesses: ", guesses);
+
+            await instance.makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            expect(await instance.getPlayers(), "Stored players did not match expected").to.deep.equal([owner.address]);
+
+            await instance.connect(addr1).makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            expect(await instance.getPlayers(), "Stored players did not match expected").to.deep.equal([owner.address, addr1.address]);
+
+            expect(await instance.getCurrentAttempts(owner.address), "Stored guesses did not match expected test guesses").to.deep.equal([guesses]);
+            expect(await instance.getCurrentAttempts(addr1.address), "Stored guesses did not match expected test guesses").to.deep.equal([guesses]);
+
+            const mockPuzzle = {
+                accumulator: 21,
+                modulus: 234,
+                witnesses: [1, 2, 3, 4, 5, 1, 1, 1, 1]
+            };
+
+            await expect(instance.createNewWordlePuzzle(mockPuzzle.accumulator, mockPuzzle.modulus, mockPuzzle.witnesses))
+                .to.emit(instance, "CreatedNewWordlePuzzle");
+
+            expect(await instance.getCurrentAttempts(owner.address), "Stored guesses did not match expected test guesses").to.deep.equal([]);
+            expect(await instance.getCurrentAttempts(addr1.address), "Stored guesses did not match expected test guesses").to.deep.equal([]);
+
+            await instance.makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            await instance.connect(addr1).makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            await instance.connect(addr1).makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+
+            expect(await instance.getCurrentAttempts(owner.address), "Stored guesses did not match expected test guesses").to.deep.equal([guesses]);
+            expect(await instance.getCurrentAttempts(addr1.address), "Stored guesses did not match expected test guesses").to.deep.equal([guesses, guesses]);
+        });
     });
 
     describe("Attempts on a Wordle puzzle", async function () {
+        it("should remember a player's previous attempts", async function () {
+            const {instance, owner} = await loadFixture(deployWordleWithPuzzleSet);
+
+            const wordlePuzzleNo = await instance.wordlePuzzleNo();
+            expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
+
+            const guesses = convertToGuess([
+                "a0",
+                "g1",
+                "r2",
+                "e3",
+                "e4"
+            ]);
+            // console.log("Guesses: ", guesses);
+
+            await instance.makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            expect(await instance.getCurrentAttempts(owner.address), "Stored guesses did not match expected test guess").to.deep.equal([guesses]);
+
+            const newGuess = convertToGuess([
+                "r0",
+                "e1",
+                "a2",
+                "l3",
+                "s4"
+            ]);
+
+            await instance.makeAttempt(newGuess, {value: ethers.utils.parseEther("0.0007")});
+            expect(await instance.getCurrentAttempts(owner.address), "Stored guesses did not match expected test guesses").to.deep.equal([guesses, newGuess]);
+        });
+
+        it("should remember past players who have attempted to solve the Wordle", async function () {
+            const {instance, owner, addr1, addr2} = await loadFixture(deployWordleWithPuzzleSet);
+
+            const wordlePuzzleNo = await instance.wordlePuzzleNo();
+            expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
+
+            const guesses = convertToGuess([
+                "a0",
+                "g1",
+                "r2",
+                "e3",
+                "e4"
+            ]);
+            // console.log("Guesses: ", guesses);
+
+            await instance.makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            expect(await instance.getPlayers(), "Stored players did not match expected").to.deep.equal([owner.address]);
+
+            await instance.makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            expect(await instance.getPlayers(), "Stored players did not match expected").to.deep.equal([owner.address]);
+
+            await instance.connect(addr1).makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            expect(await instance.getPlayers(), "Stored players did not match expected").to.deep.equal([owner.address, addr1.address]);
+
+            await instance.connect(addr2).makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            expect(await instance.getPlayers(), "Stored players did not match expected").to.deep.equal([owner.address, addr1.address, addr2.address]);
+
+            await instance.connect(addr1).makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            expect(await instance.getPlayers(), "Stored players did not match expected").to.deep.equal([owner.address, addr1.address, addr2.address]);
+
+            const mockPuzzle = {
+                accumulator: 21,
+                modulus: 234,
+                witnesses: [1, 2, 3, 4, 5, 1, 1, 1, 1]
+            };
+
+            await expect(instance.createNewWordlePuzzle(mockPuzzle.accumulator, mockPuzzle.modulus, mockPuzzle.witnesses))
+                .to.emit(instance, "CreatedNewWordlePuzzle");
+
+            expect(await instance.getPlayers(), "Stored players did not match expected").to.deep.equal([owner.address, addr1.address, addr2.address]);
+
+            await instance.connect(addr1).makeAttempt(guesses, {value: ethers.utils.parseEther("0.0007")});
+            expect(await instance.getPlayers(), "Stored players did not match expected").to.deep.equal([owner.address, addr1.address, addr2.address]);
+        });
+
         it("should verify the membership of a guess in the solution", async function () {
             const {instance} = await loadFixture(deployWordleWithPuzzleSet);
 
