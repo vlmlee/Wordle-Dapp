@@ -16,32 +16,21 @@ async function main() {
 
     // ethers is available in the global scope
     const [deployer] = await ethers.getSigners();
-    console.log(
-        'Deploying the contracts with the account:',
-        await deployer.getAddress()
-    );
+    console.log('Deploying the contracts with the account:', await deployer.getAddress());
 
-    console.log('Account balance:', (await deployer.getBalance()).toString());
+    const WordleFactory = await ethers.getContractFactory('Wordle');
+    const WordleContract = await WordleFactory.deploy();
+    await WordleContract.deployed();
 
-    const Token = await ethers.getContractFactory('Token');
-    const token = await Token.deploy();
-    await token.deployed();
-
-    console.log('Token address:', token.address);
+    console.log('Token address:', WordleContract.address);
 
     // We also save the contract's artifacts and address in the frontend directory
-    saveFrontendFiles(token);
+    saveFrontendFiles(WordleContract);
 }
 
-function saveFrontendFiles(token) {
+function saveFrontendFiles(contract) {
     const fs = require('fs');
-    const contractsDir = path.join(
-        __dirname,
-        '..',
-        'frontend',
-        'src',
-        'contracts'
-    );
+    const contractsDir = path.join(__dirname, '..', 'frontend', 'src', 'contracts');
 
     if (!fs.existsSync(contractsDir)) {
         fs.mkdirSync(contractsDir);
@@ -49,15 +38,12 @@ function saveFrontendFiles(token) {
 
     fs.writeFileSync(
         path.join(contractsDir, 'contract-address.json'),
-        JSON.stringify({ Token: token.address }, undefined, 2)
+        JSON.stringify({ Wordle: contract.address }, undefined, 2)
     );
 
-    const TokenArtifact = artifacts.readArtifactSync('Token');
+    const WordleArtifact = artifacts.readArtifactSync('Wordle');
 
-    fs.writeFileSync(
-        path.join(contractsDir, 'WordleABI.json'),
-        JSON.stringify(TokenArtifact, null, 2)
-    );
+    fs.writeFileSync(path.join(contractsDir, 'WordleABI.json'), JSON.stringify(WordleArtifact, null, 2));
 }
 
 main()
