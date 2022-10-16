@@ -62,11 +62,11 @@ export default function Keyboard({ previousAttempts, currentAttempt, keysUsed })
             {QWERTY_KEYBOARD.map((keys_row, i) => (
                 <div key={`keyboard__row-${i}`} className={'keyboard__row'}>
                     {keys_row.split('').map((letter, j) => {
-                        if (letter === 'Z') {
+                        if (letter.toUpperCase() === 'Z') {
                             return insertEnterKey(determineKeyState, letter, j);
                         }
 
-                        if (letter === 'M') {
+                        if (letter.toUpperCase() === 'M') {
                             return insertBackspaceKey(determineKeyState, letter, j);
                         }
 
