@@ -3,14 +3,14 @@ import { useState, useEffect } from 'react';
 import Wordle from './components/Wordle';
 import Keyboard from './components/Keyboard';
 import Constants from './helpers/Constants';
-import './stylesheets/WordleContainer.scss';
-import { uniq, isEmpty } from 'lodash';
+import { isEmpty } from 'lodash';
 import { isWordInWordBank, checkSolution } from './helpers/check-solution';
 import { ethers } from 'ethers';
 import BaseReducer, { initialState } from './reducers/BaseReducer';
 import { WEB3_ACTIONS } from './reducers/Web3Reducer';
 import { WORDLE_ACTIONS } from './reducers/WordleReducer';
 import WordleABI from './contracts/WordleABI.json';
+import './stylesheets/Wordle.scss';
 
 export default function Dapp() {
     const [
@@ -132,8 +132,7 @@ export default function Dapp() {
 
     return (
         <div>
-            {/*<div className={"wordle-leaderboard"}>leaderboard</div>*/}
-            <h1 className={'wordle-header-title'}>Wordle</h1>
+            <h1 className={'wordle__header'}>Wordle</h1>
             <Wordle
                 previousAttempts={previousAttempts}
                 currentAttempt={currentAttempt}
