@@ -9,7 +9,7 @@ const combineReducers =
             state
         );
 
-const BaseReducer = combineReducers([Web3Reducer, WordleReducer]);
+const BaseReducer = combineReducers(Web3Reducer, WordleReducer);
 const initialState = { ...baseWordleState, ...baseW3State };
 
 export { initialState, BaseReducer };
