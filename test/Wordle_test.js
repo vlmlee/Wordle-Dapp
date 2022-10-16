@@ -3,7 +3,7 @@ const {loadFixture} = require("@nomicfoundation/hardhat-network-helpers");
 const {ethers, waffle} = require("hardhat");
 const {BigNumber} = require("ethers");
 
-const {primes, alphabet, letterToPrime, calculateAccumulator, calculateWitnesses, powerMod, convertToGuess} = require("../helpers/wordle-helpers");
+const {primes, letterToPrime, calculateAccumulator, calculateWitnesses, powerMod, convertToGuess} = require("../helpers/wordle-helpers");
 
 describe("Wordle contract", function () {
     async function deployWordleFixture() {
@@ -38,7 +38,7 @@ describe("Wordle contract", function () {
         });
         // console.log("Primes: ", _primes);
 
-        const generator = Math.floor(2**10 + Math.random() * 2 ** 16); // Possible to hit 1 or 0 here so we add 2**10 as a floor
+        const generator = Math.floor(2**10 + Math.random() * 2 ** 16); // Possible to hit 1 or 0 here, so we add 2**10 as a floor
         // console.log("Generator: ", generator);
         const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
         // console.log("Modulus: ", _modulus);
@@ -90,7 +90,7 @@ describe("Wordle contract", function () {
         });
 
         it("should revert if the contract has no funds in its balance", async function () {
-            const {instance, owner} = await loadFixture(deployWordleFixture);
+            const {instance} = await loadFixture(deployWordleFixture);
 
             await expect(instance.withdraw())
                 .to.be.revertedWithCustomError(instance, "WithdrawalMustBeNonZero");
@@ -112,8 +112,8 @@ describe("Wordle contract", function () {
     });
 
     describe("Create new Wordle puzzle", async function () {
-        it("should be able to create a new puzzle with a new acculumator, modulus, and witnesses", async function () {
-            const {instance, owner} = await loadFixture(deployWordleFixture);
+        it("should be able to create a new puzzle with a new accumulator, modulus, and witnesses", async function () {
+            const {instance} = await loadFixture(deployWordleFixture);
 
             const mockPuzzle = {
                 accumulator: 21,
@@ -145,7 +145,7 @@ describe("Wordle contract", function () {
             });
             // console.log("Primes: ", _primes);
 
-            const generator = Math.floor(2**10 + Math.random() * 2 ** 16); // Possible to hit 1 or 0 here so we add 2**10 as a floor
+            const generator = Math.floor(2**10 + Math.random() * 2 ** 16); // Possible to hit 1 or 0 here, so we add 2**10 as a floor
             // console.log("Generator: ", generator);
             const _modulus = primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)];
             // console.log("Modulus: ", _modulus);
@@ -178,7 +178,7 @@ describe("Wordle contract", function () {
 
             await instance.resetAllAttempts();
             wordlePuzzleNo = await instance.wordlePuzzleNo();
-            expect(await instance.playerAttempts(wordlePuzzleNo, addr1.address), "Puzzle should have resetted attempts").to.equal(0);
+            expect(await instance.playerAttempts(wordlePuzzleNo, addr1.address), "Puzzle should have reset attempts").to.equal(0);
 
             await instance.connect(addr1).makeAttempt(correctGuess, {value: ethers.utils.parseEther("0.0007")});
             expect(await instance.playerPuzzleNumberSolved(addr1.address, wordlePuzzleNo), "Wordle puzzle should have been solved").to.equal(true);
@@ -186,7 +186,7 @@ describe("Wordle contract", function () {
         });
 
         it("should update the Wordle puzzle number", async function () {
-            const {instance, owner} = await loadFixture(deployWordleFixture);
+            const {instance} = await loadFixture(deployWordleFixture);
 
             await instance.resetAllAttempts();
 
@@ -194,7 +194,7 @@ describe("Wordle contract", function () {
         });
 
         it("should only allow the contract owner to create a new Wordle", async function () {
-            const {instance, owner, addr1} = await loadFixture(deployWordleFixture);
+            const {instance, addr1} = await loadFixture(deployWordleFixture);
 
             const mockPuzzle = {
                 accumulator: 21,
@@ -209,7 +209,7 @@ describe("Wordle contract", function () {
 
     describe("Attempts on a Wordle puzzle", async function () {
         it("should verify the membership of a guess in the solution", async function () {
-            const {instance, owner} = await loadFixture(deployWordleWithPuzzleSet);
+            const {instance} = await loadFixture(deployWordleWithPuzzleSet);
 
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
@@ -237,7 +237,7 @@ describe("Wordle contract", function () {
         });
 
         it("should verify the position of a guess in the solution", async function () {
-            const {instance, owner} = await loadFixture(deployWordleWithPuzzleSet);
+            const {instance} = await loadFixture(deployWordleWithPuzzleSet);
 
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, "Puzzle number did not increment").to.equal(1);
@@ -542,7 +542,7 @@ describe("Wordle contract", function () {
             });
 
             it("should return false if at least one element is false", async function () {
-                const {instance, owner, addr1} = await loadFixture(deployWordleFixture);
+                const {instance} = await loadFixture(deployWordleFixture);
 
                 const mockAnswer = [
                     true,
@@ -693,28 +693,13 @@ describe("Wordle contract", function () {
             it("should give the correct result for modular exponentiation of large numbers", async function () {
                 const {instance} = await loadFixture(deployWordleFixture);
 
-                const testSet = [
-                    {
+                const testSet = Array.from({length: 10}, () => {
+                    return                     {
                         base: Math.floor(2**10 * Math.random() * 256),
                         exp: primes[Math.floor(Math.random() * primes.length)],
                         mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
-                    },
-                    {
-                        base: Math.floor(2**10 * Math.random() * 256),
-                        exp: primes[Math.floor(Math.random() * primes.length)],
-                        mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
-                    },
-                    {
-                        base: Math.floor(2**10 * Math.random() * 256),
-                        exp: primes[Math.floor(Math.random() * primes.length)],
-                        mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
-                    },
-                    {
-                        base: Math.floor(2**10 * Math.random() * 256),
-                        exp: primes[Math.floor(Math.random() * primes.length)],
-                        mod: primes[Math.floor(Math.random() * primes.length)] * primes[Math.floor(Math.random() * primes.length)]
-                    },
-                ];
+                    };
+                });
 
                 for (let i = 0; i < testSet.length; i++) {
                     const fastMod = await instance.fastModExp(testSet[i].base, testSet[i].exp, testSet[i].mod);
