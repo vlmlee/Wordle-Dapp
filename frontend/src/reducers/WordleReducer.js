@@ -1,4 +1,5 @@
 import Constants from '../helpers/Constants';
+import { flatten, uniq } from 'lodash';
 
 const initialAttemptState = Array.from({ length: 5 }, (_, index) => {
     return {
@@ -33,12 +34,18 @@ const WordleReducer = (state, action) => {
                 attempts: state.attemptNumber++
             };
         case WORDLE_ACTIONS.UPDATE_KEYS_USED:
-            const isKeyAlreadyUsed = state.keysUsed.includes(action.payload);
+            const previouslyUsedKeys = flatten(state.previousAttempts).map((a) => a.value);
+            const isKeyAlreadyUsed = previouslyUsedKeys.includes(action.payload);
             if (isKeyAlreadyUsed) return state;
+
+            const keysUsed = uniq([
+                ...previouslyUsedKeys,
+                ...state.currentAttempt.filter((a) => !!a.value).map((p) => p.value)
+            ]);
 
             return {
                 ...state,
-                keysUsed: [...state.keysUsed, action.payload]
+                keysUsed: keysUsed
             };
         case WORDLE_ACTIONS.SOLVED_WORDLE:
             return {
