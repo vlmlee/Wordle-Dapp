@@ -1,5 +1,5 @@
 import React from "react";
-import "./Letter.scss";
+import "../stylesheets/Letter.scss";
 
 const Letter = ({position, value, updateLetter, solveState}) => {
     return <div className={`wordle-letter wordle-letter-${solveState}`}>

@@ -1,7 +1,7 @@
 import React from "react";
 import Key from "./Key";
 import Constants from "./Constants";
-import "./Keyboard.scss";
+import "../stylesheets/Keyboard.scss";
 import {flatten} from "lodash";
 
 const KEYS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];

@@ -1,7 +1,7 @@
 import React, {useEffect} from "react";
 import Letter from "./Letter";
 import FauxRow from "./FauxRow";
-import "./Wordle.scss";
+import "../stylesheets/Wordle.scss";
 
 export default function Wordle({previousStates, currentState, updateLetter, attempts}) {
     let attemptsLeft = 5 - attempts;
