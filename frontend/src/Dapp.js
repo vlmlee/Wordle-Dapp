@@ -13,8 +13,10 @@ import WordleABI from './contracts/WordleABI.json';
 import './stylesheets/Wordle.scss';
 
 export default function Dapp() {
-    const [{ attemptNumber, previousAttempts, keysUsed, isWordleSolved, currentAttempt, account, contract }, dispatch] =
-        useReducer(BaseReducer, initialState);
+    const [
+        { attemptNumber, previousAttempts, keysUsed, isWordleSolved, currentAttempt, account, contract, error },
+        dispatch
+    ] = useReducer(BaseReducer, initialState);
 
     const web3Handler = async () => {
         const accounts = await window.ethereum.request({
@@ -56,14 +58,17 @@ export default function Dapp() {
     };
 
     const makeAttempt = (e) => {
-        if (attemptNumber < 5 && e.key === 'Enter') {
+        if (!isWordleSolved && attemptNumber < 5 && e.key === 'Enter') {
             const word = currentAttempt
                 .map((state) => state.value)
                 .join('')
                 .toLowerCase();
 
             if (!isWordInWordBank(word)) {
-                console.log('not in word bank');
+                dispatch({
+                    type: WORDLE_ACTIONS.UPDATE_ERROR,
+                    payload: true
+                });
                 return;
             }
 
@@ -73,15 +78,32 @@ export default function Dapp() {
                 type: WORDLE_ACTIONS.ATTEMPT_SOLVE,
                 payload: {
                     attemptNumber: attemptNumber + 1,
-                    isWordleSolved: false,
                     previousAttempts: [...previousAttempts, checkedSolution]
                 }
             });
+
+            const _isSolved = checkedSolution.reduce((acc, cur) => {
+                acc = acc && cur.solveState === Constants.SOLVED;
+                return acc;
+            }, true);
+
+            if (_isSolved) {
+                dispatch({
+                    type: WORDLE_ACTIONS.SOLVED_WORDLE
+                });
+            }
         }
     };
 
     const deletePreviousLetter = (e) => {
-        if (attemptNumber < 5 && (e.key === 'Backspace' || e.key === 'Delete')) {
+        if (error) {
+            dispatch({
+                type: WORDLE_ACTIONS.UPDATE_ERROR,
+                payload: false
+            });
+        }
+
+        if (!isWordleSolved && attemptNumber < 5 && (e.key === 'Backspace' || e.key === 'Delete')) {
             const letterAfterDesiredPositionToInvalidate = currentAttempt.find((a) => a.value === '');
 
             if (!letterAfterDesiredPositionToInvalidate) {
@@ -139,7 +161,7 @@ export default function Dapp() {
     };
 
     const enterLetter = (e) => {
-        if (e.keyCode >= 65 && e.keyCode <= 122) {
+        if (!isWordleSolved && e.keyCode >= 65 && e.keyCode <= 122) {
             const letterUsed = e.key?.toLowerCase();
             const positionToInsert = currentAttempt.find((a) => a.value === '');
 
@@ -199,7 +221,22 @@ export default function Dapp() {
     return (
         <div>
             <h1 className={'wordle__header'}>Wordle</h1>
-            <Wordle previousAttempts={previousAttempts} currentAttempt={currentAttempt} attemptNumber={attemptNumber} />
+            {error && (
+                <div className={'wordle__error-message'}>
+                    <p>Unrecognized word</p>
+                </div>
+            )}
+            {isWordleSolved && (
+                <div className={'wordle__solved-message'}>
+                    <p className={'--green'}>You did it!</p>
+                </div>
+            )}
+            <Wordle
+                previousAttempts={previousAttempts}
+                currentAttempt={currentAttempt}
+                attemptNumber={attemptNumber}
+                error={error}
+            />
             <Keyboard previousAttempts={previousAttempts} currentAttempt={currentAttempt} keysUsed={keysUsed} />
         </div>
     );

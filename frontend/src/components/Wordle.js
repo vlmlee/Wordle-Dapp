@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import Letter from './Letter';
 import FauxRow from './FauxRow';
-import '../stylesheets/Wordle.scss';
 
-export default function Wordle({ previousAttempts, currentAttempt, attemptNumber }) {
+export default function Wordle({ previousAttempts, currentAttempt, attemptNumber, error }) {
     let attemptsLeft = 5 - attemptNumber;
 
     const generatedPreviousAttempts = () => {
@@ -32,7 +31,7 @@ export default function Wordle({ previousAttempts, currentAttempt, attemptNumber
     return (
         <div className="wordle">
             {previousAttempts.length > 0 && <div className={'previous-attempts'}>{generatedPreviousAttempts()}</div>}
-            <div className={'current-attempt'}>
+            <div className={`current-attempt ${error ? 'current-attempt--animate' : ''}`}>
                 {currentAttempt.map((letter, i) => (
                     <Letter
                         key={`current-attempt__letter-${i}`}
