@@ -30,10 +30,10 @@ export default function Dapp() {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const chainId = await provider.request({ method: 'eth_chainId' });
 
-        if (chainId === 11155111) {
-            const signer = provider.getSigner();
-            await loadContract(provider, signer);
-        }
+        // if (chainId === 11155111) {
+        const signer = provider.getSigner();
+        await loadContract(provider, signer);
+        // }
     };
 
     window.ethereum.on('accountsChanged', ([newAddress]) => {
@@ -220,6 +220,11 @@ export default function Dapp() {
 
     return (
         <div>
+            <div className={'connect-wallet'}>
+                <div className={'connect-wallet__button'} onClick={web3Handler}>
+                    Connect Wallet
+                </div>
+            </div>
             <h1 className={'wordle__header'}>Wordle</h1>
             {error && (
                 <div className={'wordle__error-message'}>

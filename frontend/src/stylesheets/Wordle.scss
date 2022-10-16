@@ -48,6 +48,26 @@
     backface-visibility: hidden;
 }
 
+.connect-wallet {
+    position: absolute;
+    right: 60px;
+    top: 30px;
+
+    &__button {
+        padding: 10px 30px;
+        background: #eee534;
+        color: #00000099;
+        font-weight: bold;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+
+        &:active {
+            transform: scale(1.02);
+        }
+    }
+}
+
 @keyframes shake {
     10%,
     90% {
