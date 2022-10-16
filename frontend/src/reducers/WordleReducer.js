@@ -1,9 +1,19 @@
+import Constants from '../helpers/Constants';
+
+const initialAttemptState = Array.from({ length: 5 }, (_, index) => {
+    return {
+        position: index,
+        value: '',
+        solveState: Constants.UNSOLVED
+    };
+});
+
 const baseWordleState = {
     attemptNumber: 0,
     previousAttempts: [],
     keysUsed: [],
     isWordleSolved: false,
-    currentAttempt: []
+    currentAttempt: initialAttemptState
 };
 
 const WORDLE_ACTIONS = {
@@ -45,7 +55,8 @@ const WordleReducer = (state, action) => {
         case WORDLE_ACTIONS.ATTEMPT_SOLVE:
             return {
                 ...state,
-                ...action.payload
+                ...action.payload,
+                currentAttempt: initialAttemptState
             };
         default:
             return state;

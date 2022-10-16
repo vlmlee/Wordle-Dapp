@@ -111,8 +111,7 @@ export default function Dapp() {
                 payload: {
                     attemptNumber: attemptNumber + 1,
                     isWordleSolved: false,
-                    previousAttempts: [...previousAttempts, checkedSolution],
-                    currentAttempt: []
+                    previousAttempts: [...previousAttempts, checkedSolution]
                 }
             });
         }
