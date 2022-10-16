@@ -59,4 +59,12 @@ const powerMod = (base, exponent, modulus) => {
     return result;
 };
 
-export { calculateWitnesses, calculateAccumulator, letterToPrime, alphabet, primes, powerMod, convertToGuess };
+module.exports = {
+    calculateWitnesses,
+    calculateAccumulator,
+    letterToPrime,
+    alphabet,
+    primes,
+    powerMod,
+    convertToGuess
+};
