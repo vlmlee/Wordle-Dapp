@@ -9,6 +9,7 @@ import { ethers } from 'ethers';
 import BaseReducer, { initialState } from './reducers/BaseReducer';
 import { WEB3_ACTIONS } from './reducers/Web3Reducer';
 import { WORDLE_ACTIONS } from './reducers/WordleReducer';
+import WordleAddress from './contracts/contract-address.json';
 import WordleABI from './contracts/WordleABI.json';
 import './stylesheets/Wordle.scss';
 
@@ -19,6 +20,8 @@ export default function Dapp() {
     ] = useReducer(BaseReducer, initialState);
 
     const web3Handler = async () => {
+        await window.ethereum.enable();
+
         const accounts = await window.ethereum.request({
             method: 'eth_requestAccounts'
         });
@@ -28,9 +31,8 @@ export default function Dapp() {
         });
 
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const chainId = await provider.request({ method: 'eth_chainId' });
 
-        // if (chainId === 11155111) {
+        // // if (chainId === 11155111) {
         const signer = provider.getSigner();
         await loadContract(provider, signer);
         // }
@@ -50,7 +52,7 @@ export default function Dapp() {
     });
 
     const loadContract = async (provider, signer) => {
-        const _contract = new ethers.Contract(WordleABI.address, WordleABI.abi, signer);
+        const _contract = new ethers.Contract(WordleAddress.address, WordleABI.abi, signer);
         dispatch({
             type: WEB3_ACTIONS.UPDATE_CONTRACT,
             payload: _contract
@@ -221,8 +223,11 @@ export default function Dapp() {
     return (
         <div>
             <div className={'connect-wallet'}>
-                <div className={'connect-wallet__button'} onClick={web3Handler}>
-                    Connect Wallet
+                <div
+                    className={`connect-wallet__button ${account ? 'connect-wallet--connected' : ''}`}
+                    onClick={web3Handler}
+                >
+                    {account ? 'Connected' : 'Connect Wallet'}
                 </div>
             </div>
             <h1 className={'wordle__header'}>Wordle</h1>

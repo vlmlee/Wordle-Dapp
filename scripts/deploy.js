@@ -38,7 +38,7 @@ function saveFrontendFiles(contract) {
 
     fs.writeFileSync(
         path.join(contractsDir, 'contract-address.json'),
-        JSON.stringify({ Wordle: contract.address }, undefined, 2)
+        JSON.stringify({ address: contract.address }, undefined, 2)
     );
 
     const WordleArtifact = artifacts.readArtifactSync('Wordle');
