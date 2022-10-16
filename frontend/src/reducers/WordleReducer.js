@@ -11,7 +11,8 @@ const WORDLE_ACTIONS = {
     UPDATE_KEYS_USED: 'UPDATE_KEYS_USED',
     SOLVED_WORDLE: 'SOLVED_WORDLE',
     CREATE_NEW_WORDLE: 'CREATE_NEW_WORDLE',
-    UPDATE_CURRENT_ATTEMPT: 'UPDATE_CURRENT_ATTEMPT'
+    UPDATE_CURRENT_ATTEMPT: 'UPDATE_CURRENT_ATTEMPT',
+    ATTEMPT_SOLVE: 'ATTEMPT_SOLVE'
 };
 
 const WordleReducer = (state, action) => {
@@ -40,6 +41,11 @@ const WordleReducer = (state, action) => {
             return {
                 ...state,
                 currentAttempt: action.payload
+            };
+        case WORDLE_ACTIONS.ATTEMPT_SOLVE:
+            return {
+                ...state,
+                ...action.payload
             };
         default:
             return state;
