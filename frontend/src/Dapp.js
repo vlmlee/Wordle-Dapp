@@ -13,18 +13,8 @@ import WordleABI from './contracts/WordleABI.json';
 import './stylesheets/Wordle.scss';
 
 export default function Dapp() {
-    const [
-        {
-            attemptNumber,
-            previousAttempts,
-            keysUsed,
-            isWordleSolved,
-            currentAttempt,
-            account,
-            contract
-        },
-        dispatch
-    ] = useReducer(BaseReducer, initialState);
+    const [{ attemptNumber, previousAttempts, keysUsed, isWordleSolved, currentAttempt, account, contract }, dispatch] =
+        useReducer(BaseReducer, initialState);
 
     const web3Handler = async () => {
         const accounts = await window.ethereum.request({
@@ -58,11 +48,7 @@ export default function Dapp() {
     });
 
     const loadContract = async (provider, signer) => {
-        const _contract = new ethers.Contract(
-            WordleABI.address,
-            WordleABI.abi,
-            signer
-        );
+        const _contract = new ethers.Contract(WordleABI.address, WordleABI.abi, signer);
         dispatch({
             type: WEB3_ACTIONS.UPDATE_CONTRACT,
             payload: _contract
@@ -138,11 +124,7 @@ export default function Dapp() {
                 updateLetter={updateLetter}
                 attemptNumber={attemptNumber}
             />
-            {/*<Keyboard*/}
-            {/*    previousStates={previousStates}*/}
-            {/*    keyboardState={currentState}*/}
-            {/*    keysUsed={keysUsed}*/}
-            {/*/>*/}
+            <Keyboard previousAttempts={previousAttempts} currentAttempt={currentAttempt} keysUsed={keysUsed} />
         </div>
     );
 }
