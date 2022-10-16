@@ -143,7 +143,7 @@ export default function Dapp() {
             const letterUsed = e.key?.toLowerCase();
             const positionToInsert = currentAttempt.find((a) => a.value === '');
 
-            if (positionToInsert.position === 0) {
+            if (positionToInsert?.position === 0) {
                 dispatch({
                     type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
                     payload: [
@@ -159,7 +159,7 @@ export default function Dapp() {
                     type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
                     payload: letterUsed
                 });
-            } else if (positionToInsert.position > 0) {
+            } else if (positionToInsert?.position > 0) {
                 dispatch({
                     type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
                     payload: [

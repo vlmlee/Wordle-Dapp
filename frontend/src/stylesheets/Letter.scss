@@ -1,15 +1,15 @@
 .letter {
     display: inline-block;
     margin: 2.5px;
-    font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-        Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans',
-        sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+        'Noto Sans', 'Liberation Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
     font-weight: 800;
 
     input {
         width: 62px;
         height: 62px;
+        line-height: 62px;
         text-align: center;
         font-size: 32px;
         border: 2px solid #d3d6da;
@@ -22,6 +22,12 @@
             background-color: yellow;
             outline: none;
         }
+    }
+}
+
+div:not(.previous-attempts) {
+    .letter--animate input {
+        animation: 0.3s bounce alternate;
     }
 }
 
@@ -44,5 +50,17 @@
         &--NOT_PRESENT_IN_SOLUTION input {
             background-color: #787c7e;
         }
+    }
+}
+
+@keyframes bounce {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
     }
 }
