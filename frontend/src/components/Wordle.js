@@ -3,12 +3,7 @@ import Letter from './Letter';
 import FauxRow from './FauxRow';
 import '../stylesheets/Wordle.scss';
 
-export default function Wordle({
-    previousAttempts,
-    currentAttempt,
-    updateLetter,
-    attemptNumber
-}) {
+export default function Wordle({ previousAttempts, currentAttempt, attemptNumber }) {
     let attemptsLeft = 5 - attemptNumber;
 
     const generatedPreviousAttempts = () => {
@@ -36,11 +31,7 @@ export default function Wordle({
 
     return (
         <div className="wordle">
-            {previousAttempts.length > 0 && (
-                <div className={'previous-attempts'}>
-                    {generatedPreviousAttempts()}
-                </div>
-            )}
+            {previousAttempts.length > 0 && <div className={'previous-attempts'}>{generatedPreviousAttempts()}</div>}
             <div className={'current-attempt'}>
                 {currentAttempt.map((letter, i) => (
                     <Letter
@@ -48,7 +39,6 @@ export default function Wordle({
                         position={letter.position}
                         solveState={letter.solveState}
                         value={letter.value}
-                        updateLetter={updateLetter}
                     />
                 ))}
             </div>

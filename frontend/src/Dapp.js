@@ -55,31 +55,8 @@ export default function Dapp() {
         });
     };
 
-    const updateLetter = (position, value) => {
-        const letterUsed = value.toLowerCase();
-
-        if (letterUsed !== '') {
-            dispatch({
-                type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
-                payload: [
-                    ...currentAttempt.slice(0, position),
-                    {
-                        position: position,
-                        value: letterUsed,
-                        solveState: Constants.UNSOLVED
-                    },
-                    ...currentAttempt.slice(position + 1)
-                ]
-            });
-            dispatch({
-                type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
-                payload: letterUsed
-            });
-        }
-    };
-
     const makeAttempt = (e) => {
-        if (attemptNumber < 6 && e.key === 'Enter') {
+        if (attemptNumber < 5 && e.key === 'Enter') {
             const word = currentAttempt
                 .map((state) => state.value)
                 .join('')
@@ -103,8 +80,110 @@ export default function Dapp() {
         }
     };
 
+    const deletePreviousLetter = (e) => {
+        if (attemptNumber < 5 && (e.key === 'Backspace' || e.key === 'Delete')) {
+            const positionAfterToInvalidate = currentAttempt.find((a) => a.value === '');
+
+            if (!positionAfterToInvalidate) {
+                dispatch({
+                    type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
+                    payload: [
+                        ...currentAttempt.slice(0, 4),
+                        {
+                            position: 4,
+                            value: '',
+                            solveState: Constants.UNSOLVED
+                        }
+                    ]
+                });
+                dispatch({
+                    type: WORDLE_ACTIONS.REMOVE_KEY_USED,
+                    payload: currentAttempt[currentAttempt.length - 1].value
+                });
+            } else if (positionAfterToInvalidate.position > 1) {
+                dispatch({
+                    type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
+                    payload: [
+                        ...currentAttempt.slice(0, positionAfterToInvalidate.position - 1),
+                        {
+                            position: positionAfterToInvalidate.position - 1,
+                            value: '',
+                            solveState: Constants.UNSOLVED
+                        },
+                        ...currentAttempt.slice(positionAfterToInvalidate.position)
+                    ]
+                });
+                dispatch({
+                    type: WORDLE_ACTIONS.REMOVE_KEY_USED,
+                    payload: positionAfterToInvalidate.value
+                });
+            } else if (positionAfterToInvalidate.position === 1) {
+                // Removing the first letter
+                dispatch({
+                    type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
+                    payload: [
+                        {
+                            position: positionAfterToInvalidate.position - 1,
+                            value: '',
+                            solveState: Constants.UNSOLVED
+                        },
+                        ...currentAttempt.slice(positionAfterToInvalidate.position)
+                    ]
+                });
+                dispatch({
+                    type: WORDLE_ACTIONS.REMOVE_KEY_USED,
+                    payload: positionAfterToInvalidate.value
+                });
+            }
+        }
+    };
+
+    const enterLetter = (e) => {
+        if (e.keyCode >= 65 && e.keyCode <= 122) {
+            const letterUsed = e.key?.toLowerCase();
+            const positionToInsert = currentAttempt.find((a) => a.value === '');
+
+            if (positionToInsert.position === 0) {
+                dispatch({
+                    type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
+                    payload: [
+                        {
+                            position: positionToInsert.position,
+                            value: letterUsed,
+                            solveState: Constants.UNSOLVED
+                        },
+                        ...currentAttempt.slice(positionToInsert.position + 1)
+                    ]
+                });
+                dispatch({
+                    type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
+                    payload: letterUsed
+                });
+            } else if (positionToInsert.position > 0) {
+                dispatch({
+                    type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
+                    payload: [
+                        ...currentAttempt.slice(0, positionToInsert.position),
+                        {
+                            position: positionToInsert.position,
+                            value: letterUsed,
+                            solveState: Constants.UNSOLVED
+                        },
+                        ...currentAttempt.slice(positionToInsert.position + 1)
+                    ]
+                });
+                dispatch({
+                    type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
+                    payload: letterUsed
+                });
+            }
+        }
+    };
+
     useEffect(() => {
         document.addEventListener('keypress', makeAttempt);
+        document.addEventListener('keydown', deletePreviousLetter);
+        document.addEventListener('keypress', enterLetter);
 
         if (!isEmpty(contract)) {
             // get attempts, etc
@@ -112,18 +191,15 @@ export default function Dapp() {
 
         return () => {
             document.removeEventListener('keypress', makeAttempt);
+            document.removeEventListener('keydown', deletePreviousLetter);
+            document.removeEventListener('keypress', enterLetter);
         };
-    }, [keysUsed]);
+    }, [makeAttempt, deletePreviousLetter, enterLetter]);
 
     return (
         <div>
             <h1 className={'wordle__header'}>Wordle</h1>
-            <Wordle
-                previousAttempts={previousAttempts}
-                currentAttempt={currentAttempt}
-                updateLetter={updateLetter}
-                attemptNumber={attemptNumber}
-            />
+            <Wordle previousAttempts={previousAttempts} currentAttempt={currentAttempt} attemptNumber={attemptNumber} />
             <Keyboard previousAttempts={previousAttempts} currentAttempt={currentAttempt} keysUsed={keysUsed} />
         </div>
     );

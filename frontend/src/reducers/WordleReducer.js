@@ -23,7 +23,8 @@ const WORDLE_ACTIONS = {
     SOLVED_WORDLE: 'SOLVED_WORDLE',
     CREATE_NEW_WORDLE: 'CREATE_NEW_WORDLE',
     UPDATE_CURRENT_ATTEMPT: 'UPDATE_CURRENT_ATTEMPT',
-    ATTEMPT_SOLVE: 'ATTEMPT_SOLVE'
+    ATTEMPT_SOLVE: 'ATTEMPT_SOLVE',
+    REMOVE_KEY_USED: 'REMOVE_KEY_USED'
 };
 
 const WordleReducer = (state, action) => {
@@ -46,6 +47,11 @@ const WordleReducer = (state, action) => {
             return {
                 ...state,
                 keysUsed: keysUsed
+            };
+        case WORDLE_ACTIONS.REMOVE_KEY_USED:
+            return {
+                ...state,
+                keysUsed: state.keysUsed.filter((k) => k !== action.payload)
             };
         case WORDLE_ACTIONS.SOLVED_WORDLE:
             return {
