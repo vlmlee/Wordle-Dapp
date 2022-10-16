@@ -1,11 +1,20 @@
 import Constants from './Constants';
 
+import { convertToGuess } from './wordle-helpers';
+import { ethers } from 'ethers';
+
 const wordBank = require('./wordBank.json');
 
 const solution = ['r', 'e', 'c', 'a', 'p', '0r', '1e', '2c', '3a', '4p'];
 
 function isWordInWordBank(word) {
     return wordBank.includes(word.toLowerCase());
+}
+
+async function attemptToSolve(_contract, attempt) {
+    const guess = attempt.map((a) => a.value + a.position);
+    const answer = await _contract.makeAttempt(convertToGuess(guess), { value: ethers.utils.parseEther('0.0007') });
+    return answer;
 }
 
 function checkSolution(currentState) {
@@ -46,4 +55,4 @@ function checkSolution(currentState) {
     return checkedSolution;
 }
 
-export { isWordInWordBank, checkSolution };
+export { isWordInWordBank, checkSolution, attemptToSolve };
