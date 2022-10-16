@@ -82,9 +82,9 @@ export default function Dapp() {
 
     const deletePreviousLetter = (e) => {
         if (attemptNumber < 5 && (e.key === 'Backspace' || e.key === 'Delete')) {
-            const positionAfterToInvalidate = currentAttempt.find((a) => a.value === '');
+            const letterAfterDesiredPositionToInvalidate = currentAttempt.find((a) => a.value === '');
 
-            if (!positionAfterToInvalidate) {
+            if (!letterAfterDesiredPositionToInvalidate) {
                 dispatch({
                     type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
                     payload: [
@@ -97,42 +97,42 @@ export default function Dapp() {
                     ]
                 });
                 dispatch({
-                    type: WORDLE_ACTIONS.REMOVE_KEY_USED,
+                    type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
                     payload: currentAttempt[currentAttempt.length - 1].value
                 });
-            } else if (positionAfterToInvalidate.position > 1) {
+            } else if (letterAfterDesiredPositionToInvalidate.position > 1) {
                 dispatch({
                     type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
                     payload: [
-                        ...currentAttempt.slice(0, positionAfterToInvalidate.position - 1),
+                        ...currentAttempt.slice(0, letterAfterDesiredPositionToInvalidate.position - 1),
                         {
-                            position: positionAfterToInvalidate.position - 1,
+                            position: letterAfterDesiredPositionToInvalidate.position - 1,
                             value: '',
                             solveState: Constants.UNSOLVED
                         },
-                        ...currentAttempt.slice(positionAfterToInvalidate.position)
+                        ...currentAttempt.slice(letterAfterDesiredPositionToInvalidate.position)
                     ]
                 });
                 dispatch({
-                    type: WORDLE_ACTIONS.REMOVE_KEY_USED,
-                    payload: positionAfterToInvalidate.value
+                    type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
+                    payload: letterAfterDesiredPositionToInvalidate.value
                 });
-            } else if (positionAfterToInvalidate.position === 1) {
+            } else if (letterAfterDesiredPositionToInvalidate.position === 1) {
                 // Removing the first letter
                 dispatch({
                     type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
                     payload: [
                         {
-                            position: positionAfterToInvalidate.position - 1,
+                            position: letterAfterDesiredPositionToInvalidate.position - 1,
                             value: '',
                             solveState: Constants.UNSOLVED
                         },
-                        ...currentAttempt.slice(positionAfterToInvalidate.position)
+                        ...currentAttempt.slice(letterAfterDesiredPositionToInvalidate.position)
                     ]
                 });
                 dispatch({
-                    type: WORDLE_ACTIONS.REMOVE_KEY_USED,
-                    payload: positionAfterToInvalidate.value
+                    type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
+                    payload: letterAfterDesiredPositionToInvalidate.value
                 });
             }
         }
