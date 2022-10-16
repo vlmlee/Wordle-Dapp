@@ -1,60 +1,63 @@
 .keyboard {
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translate(-50%, -5%);
-  font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  font-weight: 700;
-  font-size: 13.33px;
-  color: #fff;
-
-  .keyboard-row {
     display: flex;
-    flex-direction: row;
-    justify-content: center;
+    flex-direction: column;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, -5%);
+    font-family: 'Helvetica Neue', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans',
+        sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+    font-weight: 700;
+    font-size: 13.33px;
+    color: #fff;
 
-    .keyboard-key {
-      border: 1px solid #d3d6da;
-      width: 43px;
-      height: 58px;
-      line-height: 58px;
-      margin: 4px 3px;
-      border-radius: 4px;
-      text-align: center;
+    &__row {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
     }
 
-    .keyboard-key-enter {
-      width: 65px;
+    &__key {
+        border: 1px solid #d3d6da;
+        width: 43px;
+        height: 58px;
+        line-height: 58px;
+        margin: 4px 3px;
+        border-radius: 4px;
+        text-align: center;
+
+        &--UNUSED_LETTER {
+            background-color: rgb(211, 214, 218);
+            color: #000;
+        }
+
+        &--USED_LETTER,
+        &--NOT_PRESENT_IN_SOLUTION {
+            background-color: #787c7e;
+        }
+
+        &--SOLVED {
+            background-color: #6aaa64;
+        }
+
+        &--WRONG_POSITION {
+            background-color: #c9b458;
+        }
     }
 
-    .keyboard-key-backspace {
-      width: 65px;
-
-      img {
-        height: 25px;
-        position: relative;
-        bottom: 2px;
-      }
+    &__enter-key {
+        width: 65px;
     }
-  }
 
-  .keyboard-key-UNUSED_LETTER {
-    background-color: rgb(211, 214, 218);
-    color: #000;
-  }
+    &__backspace-key {
+        width: 65px;
 
-  .keyboard-key-USED_LETTER, .keyboard-key-NOT_PRESENT_IN_SOLUTION {
-    background-color: #787c7e;
-  }
-
-  .keyboard-key-SOLVED {
-    background-color: #6aaa64;
-  }
-
-  .keyboard-key-WRONG_POSITION {
-    background-color: #c9b458;
-  }
+        img {
+            height: 25px;
+            position: relative;
+            bottom: 2px;
+        }
+    }
 }
-
