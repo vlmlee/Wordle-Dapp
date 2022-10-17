@@ -5,7 +5,7 @@
   "scripts": {
     "test": "hardhat test",
     "deploy-local": "hardhat run scripts/deploy.js --network localhost",
-    "deploy-and-create-wordle": "hardhat run scripts/deploy.js --network localhost && node create-new-wordle-puzzle.js"
+    "deploy-and-create-wordle": "hardhat run scripts/deploy.js --network localhost && npx hardhat run scripts/create-new-wordle-puzzle.js --network localhost"
   },
   "repository": {
     "type": "git",

@@ -5,14 +5,15 @@ const {
     calculateWitnesses
 } = require('../frontend/src/helpers/wordle-helpers');
 
-const { ethers } = require('ethers');
+const { network, ethers, artifacts } = require('hardhat');
+
 const WordleAddress = require('../frontend/src/contracts/contract-address.json');
 const WordleABI = require('../frontend/src/contracts/WordleABI.json');
 
 require('dotenv').config();
 
 async function createNewWordlePuzzle() {
-    const provider = new ethers.providers.JsonRpcProvider('http://127.0.0.1:8545');
+    const provider = new ethers.providers.JsonRpcProvider();
     // hardhat account #0
     const wallet = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', provider);
     const instance = new ethers.Contract(WordleAddress.address, WordleABI.abi, wallet);
