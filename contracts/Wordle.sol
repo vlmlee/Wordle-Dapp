@@ -33,6 +33,7 @@ contract Wordle {
     uint256 public playerAttemptsLength;
 
     mapping(address => uint256[][]) public currentAttempts;
+    mapping(address => bool[][]) public currentAnswers;
     address[] public players;
 
     mapping(address => uint256) public playerPuzzleSolvedCount;
@@ -71,6 +72,10 @@ contract Wordle {
         return currentAttempts[_player];
     }
 
+    function getCurrentAnswers(address _player) external view returns (bool[][] memory) {
+        return currentAnswers[_player];
+    }
+
     function getPlayers() external view returns (address[] memory) {
         return players;
     }
@@ -83,7 +88,7 @@ contract Wordle {
         if (!((payable(address(this)).balance) > 0)) revert ContractHasNoBalance();
         if (_amount > (payable(address(this)).balance)) revert ContractDoesNotHaveEnoughFunds(_amount);
 
-        (bool success,) = payable(address(leaderboard)).call{ value: _amount}("");
+        (bool success,) = payable(address(leaderboard)).call{value : _amount}("");
 
         if (success) {
             emit LeaderboardSuccessfullyFunded(address(leaderboard), _amount);
@@ -102,10 +107,11 @@ contract Wordle {
         if (msg.value < FEE) revert PlayerMustPayFeeToPlay(FEE);
 
         uint8 attemptNumber = playerAttempts[wordlePuzzleNo][msg.sender];
+        bool playerHasSolvedPuzzle = playerPuzzleNumberSolved[msg.sender][wordlePuzzleNo];
+
         if (attemptNumber > MAX_ATTEMPTS)
             revert PlayerHasMadeTooManyAttempts("Player has maxed out their attempts for this puzzle. Wait for the next Wordle to play again.");
 
-        bool playerHasSolvedPuzzle = playerPuzzleNumberSolved[msg.sender][wordlePuzzleNo];
         if (playerHasSolvedPuzzle == true) revert PlayerHasAlreadySolvedWordle();
 
         answer = new bool[](guesses.length);
@@ -127,7 +133,10 @@ contract Wordle {
         uint256[][] storage attemptsArr = currentAttempts[msg.sender];
         attemptsArr.push(guesses);
 
-        playerAttempts[wordlePuzzleNo][msg.sender]++;
+        bool[][] storage answersArr = currentAnswers[msg.sender];
+        answersArr.push(answer);
+
+    playerAttempts[wordlePuzzleNo][msg.sender]++;
 
         isSolved = checkIfSolved(answer);
 
@@ -158,7 +167,7 @@ contract Wordle {
     function withdraw() public MustBeOwner {
         uint256 _value = payable(address(this)).balance;
         if (!(_value > 0)) revert WithdrawalMustBeNonZero(_value);
-        (bool success,) = owner.call{ value: _value }("");
+        (bool success,) = owner.call{value : _value}("");
         if (!success) revert WithdrawalFailed();
         emit WithdrawalSuccessful(_value);
     }
@@ -169,7 +178,7 @@ contract Wordle {
     function verifyMembership(uint256 guess) public view WordleMustBeReady returns (bool) {
         for (uint8 i = 5; i < witnesses.length; i++) {
             uint256 witness = witnesses[i];
-            uint256 verification = guess > 2**16 ? powerMod(witness, guess, modulus) : fastModExp(witness, guess, modulus);
+            uint256 verification = guess > 2 ** 16 ? powerMod(witness, guess, modulus) : fastModExp(witness, guess, modulus);
             if (verification == accumulator) {
                 return true;
             }
@@ -180,8 +189,9 @@ contract Wordle {
 
     // Checks if the letter is in the correct position.
     function verifyPosition(uint8 index, uint256 guess) public view WordleMustBeReady returns (bool) {
-        uint256 witness = witnesses[index]; // witnesses[index] = G**[Set \ value@index] % modulus
-        uint256 verification = guess > 2**16 ? powerMod(witness, guess, modulus) : fastModExp(witness, guess, modulus);
+        uint256 witness = witnesses[index];
+        // witnesses[index] = G**[Set \ value@index] % modulus
+        uint256 verification = guess > 2 ** 16 ? powerMod(witness, guess, modulus) : fastModExp(witness, guess, modulus);
 
         if (verification == accumulator) {
             return true;
@@ -209,7 +219,8 @@ contract Wordle {
         while (_exponent > 0) {
             if (_exponent % 2 == 1)  //odd number
                 result = (result * _base) % _modulus;
-            _exponent = _exponent >> 1; //divide by 2
+            _exponent = _exponent >> 1;
+            //divide by 2
             _base = (_base * _base) % _modulus;
         }
         return result;
@@ -272,7 +283,7 @@ contract Wordle {
         output = new uint8[](binLength);
 
         for (uint256 i = binLength; i > 0; i--) {
-            output[i-1] = (n % 2 == 1) ? 1 : 0;
+            output[i - 1] = (n % 2 == 1) ? 1 : 0;
             n /= 2;
         }
 
@@ -283,7 +294,7 @@ contract Wordle {
     function log2ceil(uint x) public pure returns (uint y) {
         assembly {
             let arg := x
-            x := sub(x,1)
+            x := sub(x, 1)
             x := or(x, div(x, 0x02))
             x := or(x, div(x, 0x04))
             x := or(x, div(x, 0x10))
@@ -294,19 +305,19 @@ contract Wordle {
             x := or(x, div(x, 0x100000000000000000000000000000000))
             x := add(x, 1)
             let m := mload(0x40)
-            mstore(m,           0xf8f9cbfae6cc78fbefe7cdc3a1793dfcf4f0e8bbd8cec470b6a28a7a5a3e1efd)
-            mstore(add(m,0x20), 0xf5ecf1b3e9debc68e1d9cfabc5997135bfb7a7a3938b7b606b5b4b3f2f1f0ffe)
-            mstore(add(m,0x40), 0xf6e4ed9ff2d6b458eadcdf97bd91692de2d4da8fd2d0ac50c6ae9a8272523616)
-            mstore(add(m,0x60), 0xc8c0b887b0a8a4489c948c7f847c6125746c645c544c444038302820181008ff)
-            mstore(add(m,0x80), 0xf7cae577eec2a03cf3bad76fb589591debb2dd67e0aa9834bea6925f6a4a2e0e)
-            mstore(add(m,0xa0), 0xe39ed557db96902cd38ed14fad815115c786af479b7e83247363534337271707)
-            mstore(add(m,0xc0), 0xc976c13bb96e881cb166a933a55e490d9d56952b8d4e801485467d2362422606)
-            mstore(add(m,0xe0), 0x753a6d1b65325d0c552a4d1345224105391a310b29122104190a110309020100)
+            mstore(m, 0xf8f9cbfae6cc78fbefe7cdc3a1793dfcf4f0e8bbd8cec470b6a28a7a5a3e1efd)
+            mstore(add(m, 0x20), 0xf5ecf1b3e9debc68e1d9cfabc5997135bfb7a7a3938b7b606b5b4b3f2f1f0ffe)
+            mstore(add(m, 0x40), 0xf6e4ed9ff2d6b458eadcdf97bd91692de2d4da8fd2d0ac50c6ae9a8272523616)
+            mstore(add(m, 0x60), 0xc8c0b887b0a8a4489c948c7f847c6125746c645c544c444038302820181008ff)
+            mstore(add(m, 0x80), 0xf7cae577eec2a03cf3bad76fb589591debb2dd67e0aa9834bea6925f6a4a2e0e)
+            mstore(add(m, 0xa0), 0xe39ed557db96902cd38ed14fad815115c786af479b7e83247363534337271707)
+            mstore(add(m, 0xc0), 0xc976c13bb96e881cb166a933a55e490d9d56952b8d4e801485467d2362422606)
+            mstore(add(m, 0xe0), 0x753a6d1b65325d0c552a4d1345224105391a310b29122104190a110309020100)
             mstore(0x40, add(m, 0x100))
             let magic := 0x818283848586878898a8b8c8d8e8f929395969799a9b9d9e9faaeb6bedeeff
             let shift := 0x100000000000000000000000000000000000000000000000000000000000000
             let a := div(mul(x, magic), shift)
-            y := div(mload(add(m,sub(255,a))), shift)
+            y := div(mload(add(m, sub(255, a))), shift)
             y := add(y, mul(256, gt(arg, 0x8000000000000000000000000000000000000000000000000000000000000000)))
         }
     }
