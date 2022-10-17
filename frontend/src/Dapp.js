@@ -52,131 +52,140 @@ export default function Dapp() {
         });
     };
 
-    const makeAttempt = async (e) => {
-        if (!isWordleSolved && attemptNumber < 5 && e.key === 'Enter') {
-            const word = currentAttempt
-                .map((state) => state.value)
-                .join('')
-                .toLowerCase();
+    const makeAttempt = useCallback(
+        async (e) => {
+            if (!isWordleSolved && attemptNumber < 5 && e.key === 'Enter') {
+                const word = currentAttempt
+                    .map((state) => state.value)
+                    .join('')
+                    .toLowerCase();
 
-            if (!isWordInWordBank(word)) {
+                if (!isWordInWordBank(word)) {
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_ERROR,
+                        payload: true
+                    });
+                    return;
+                }
+
+                await attemptToSolve(contract, currentAttempt);
+            }
+        },
+        [currentAttempt, attemptNumber, contract, isWordleSolved]
+    );
+
+    const deletePreviousLetter = useCallback(
+        (e) => {
+            if (error) {
                 dispatch({
                     type: WORDLE_ACTIONS.UPDATE_ERROR,
-                    payload: true
-                });
-                return;
-            }
-
-            await attemptToSolve(contract, currentAttempt);
-        }
-    };
-
-    const deletePreviousLetter = (e) => {
-        if (error) {
-            dispatch({
-                type: WORDLE_ACTIONS.UPDATE_ERROR,
-                payload: false
-            });
-        }
-
-        if (!isWordleSolved && attemptNumber < 5 && (e.key === 'Backspace' || e.key === 'Delete')) {
-            const letterAfterDesiredPositionToInvalidate = currentAttempt.find((a) => a.value === '');
-
-            if (!letterAfterDesiredPositionToInvalidate) {
-                dispatch({
-                    type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
-                    payload: [
-                        ...currentAttempt.slice(0, 4),
-                        {
-                            position: 4,
-                            value: '',
-                            solveState: Constants.UNSOLVED
-                        }
-                    ]
-                });
-                dispatch({
-                    type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
-                    payload: currentAttempt[currentAttempt.length - 1].value
-                });
-            } else if (letterAfterDesiredPositionToInvalidate.position > 1) {
-                dispatch({
-                    type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
-                    payload: [
-                        ...currentAttempt.slice(0, letterAfterDesiredPositionToInvalidate.position - 1),
-                        {
-                            position: letterAfterDesiredPositionToInvalidate.position - 1,
-                            value: '',
-                            solveState: Constants.UNSOLVED
-                        },
-                        ...currentAttempt.slice(letterAfterDesiredPositionToInvalidate.position)
-                    ]
-                });
-                dispatch({
-                    type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
-                    payload: letterAfterDesiredPositionToInvalidate.value
-                });
-            } else if (letterAfterDesiredPositionToInvalidate.position === 1) {
-                // Removing the first letter
-                dispatch({
-                    type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
-                    payload: [
-                        {
-                            position: letterAfterDesiredPositionToInvalidate.position - 1,
-                            value: '',
-                            solveState: Constants.UNSOLVED
-                        },
-                        ...currentAttempt.slice(letterAfterDesiredPositionToInvalidate.position)
-                    ]
-                });
-                dispatch({
-                    type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
-                    payload: letterAfterDesiredPositionToInvalidate.value
+                    payload: false
                 });
             }
-        }
-    };
 
-    const enterLetter = (e) => {
-        if (!isWordleSolved && e.keyCode >= 65 && e.keyCode <= 122) {
-            const letterUsed = e.key?.toLowerCase();
-            const positionToInsert = currentAttempt.find((a) => a.value === '');
+            if (!isWordleSolved && attemptNumber < 5 && (e.key === 'Backspace' || e.key === 'Delete')) {
+                const letterAfterDesiredPositionToInvalidate = currentAttempt.find((a) => a.value === '');
 
-            if (positionToInsert?.position === 0) {
-                dispatch({
-                    type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
-                    payload: [
-                        {
-                            position: positionToInsert.position,
-                            value: letterUsed,
-                            solveState: Constants.UNSOLVED
-                        },
-                        ...currentAttempt.slice(positionToInsert.position + 1)
-                    ]
-                });
-                dispatch({
-                    type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
-                    payload: letterUsed
-                });
-            } else if (positionToInsert?.position > 0) {
-                dispatch({
-                    type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
-                    payload: [
-                        ...currentAttempt.slice(0, positionToInsert.position),
-                        {
-                            position: positionToInsert.position,
-                            value: letterUsed,
-                            solveState: Constants.UNSOLVED
-                        },
-                        ...currentAttempt.slice(positionToInsert.position + 1)
-                    ]
-                });
-                dispatch({
-                    type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
-                    payload: letterUsed
-                });
+                if (!letterAfterDesiredPositionToInvalidate) {
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
+                        payload: [
+                            ...currentAttempt.slice(0, 4),
+                            {
+                                position: 4,
+                                value: '',
+                                solveState: Constants.UNSOLVED
+                            }
+                        ]
+                    });
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
+                        payload: currentAttempt[currentAttempt.length - 1].value
+                    });
+                } else if (letterAfterDesiredPositionToInvalidate.position > 1) {
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
+                        payload: [
+                            ...currentAttempt.slice(0, letterAfterDesiredPositionToInvalidate.position - 1),
+                            {
+                                position: letterAfterDesiredPositionToInvalidate.position - 1,
+                                value: '',
+                                solveState: Constants.UNSOLVED
+                            },
+                            ...currentAttempt.slice(letterAfterDesiredPositionToInvalidate.position)
+                        ]
+                    });
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
+                        payload: letterAfterDesiredPositionToInvalidate.value
+                    });
+                } else if (letterAfterDesiredPositionToInvalidate.position === 1) {
+                    // Removing the first letter
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
+                        payload: [
+                            {
+                                position: letterAfterDesiredPositionToInvalidate.position - 1,
+                                value: '',
+                                solveState: Constants.UNSOLVED
+                            },
+                            ...currentAttempt.slice(letterAfterDesiredPositionToInvalidate.position)
+                        ]
+                    });
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
+                        payload: letterAfterDesiredPositionToInvalidate.value
+                    });
+                }
             }
-        }
-    };
+        },
+        [attemptNumber, currentAttempt, error, isWordleSolved]
+    );
+
+    const enterLetter = useCallback(
+        (e) => {
+            if (!isWordleSolved && e.keyCode >= 65 && e.keyCode <= 122) {
+                const letterUsed = e.key?.toLowerCase();
+                const positionToInsert = currentAttempt.find((a) => a.value === '');
+
+                if (positionToInsert?.position === 0) {
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
+                        payload: [
+                            {
+                                position: positionToInsert.position,
+                                value: letterUsed,
+                                solveState: Constants.UNSOLVED
+                            },
+                            ...currentAttempt.slice(positionToInsert.position + 1)
+                        ]
+                    });
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
+                        payload: letterUsed
+                    });
+                } else if (positionToInsert?.position > 0) {
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_CURRENT_ATTEMPT,
+                        payload: [
+                            ...currentAttempt.slice(0, positionToInsert.position),
+                            {
+                                position: positionToInsert.position,
+                                value: letterUsed,
+                                solveState: Constants.UNSOLVED
+                            },
+                            ...currentAttempt.slice(positionToInsert.position + 1)
+                        ]
+                    });
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
+                        payload: letterUsed
+                    });
+                }
+            }
+        },
+        [currentAttempt, isWordleSolved]
+    );
 
     const contractEventListener = useCallback(
         (_player, _attemptNumber, _wordlePuzzleNo, _answer, isSolved) => {
@@ -198,7 +207,7 @@ export default function Dapp() {
                 });
             }
         },
-        [currentAttempt, wordlePuzzleNumber]
+        [currentAttempt, wordlePuzzleNumber, previousAttempts]
     );
 
     const playerHasAlreadySolvedWordleListener = useCallback(
@@ -265,7 +274,7 @@ export default function Dapp() {
         }
 
         getCurrentWordleNumber();
-    }, [contract]);
+    }, [contract, account]);
 
     useEffect(() => {
         document.addEventListener('keypress', makeAttempt);
