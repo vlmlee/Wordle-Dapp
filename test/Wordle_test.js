@@ -9,7 +9,7 @@ const {
     calculateAccumulator,
     calculateWitnesses,
     powerMod,
-    convertToGuess
+    convertLetterAndPositionToPrimes
 } = require('../frontend/src/helpers/wordle-helpers');
 
 describe('Wordle contract', function () {
@@ -146,7 +146,7 @@ describe('Wordle contract', function () {
             let attempts = 0;
             expect(await instance.playerAttempts(wordlePuzzleNo, addr1.address), '').to.equal(attempts);
 
-            const correctGuess = convertToGuess(['r0', 'a1', 'l2', 'l3', 'y4']);
+            const correctGuess = convertLetterAndPositionToPrimes(['r0', 'a1', 'l2', 'l3', 'y4']);
 
             await instance.connect(addr1).makeAttempt(correctGuess, { value: ethers.utils.parseEther('0.0007') });
 
@@ -207,7 +207,7 @@ describe('Wordle contract', function () {
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const guesses = convertToGuess(['a0', 'g1', 'r2', 'e3', 'e4']);
+            const guesses = convertLetterAndPositionToPrimes(['a0', 'g1', 'r2', 'e3', 'e4']);
             // console.log("Guesses: ", guesses);
 
             await instance.makeAttempt(guesses, { value: ethers.utils.parseEther('0.0007') });
@@ -269,7 +269,7 @@ describe('Wordle contract', function () {
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const guesses = convertToGuess(['a0', 'g1', 'r2', 'e3', 'e4']);
+            const guesses = convertLetterAndPositionToPrimes(['a0', 'g1', 'r2', 'e3', 'e4']);
             // console.log("Guesses: ", guesses);
 
             await instance.makeAttempt(guesses, { value: ethers.utils.parseEther('0.0007') });
@@ -278,7 +278,7 @@ describe('Wordle contract', function () {
                 'Stored guesses did not match expected test guess'
             ).to.deep.equal([guesses]);
 
-            const newGuess = convertToGuess(['r0', 'e1', 'a2', 'l3', 's4']);
+            const newGuess = convertLetterAndPositionToPrimes(['r0', 'e1', 'a2', 'l3', 's4']);
 
             await instance.makeAttempt(newGuess, { value: ethers.utils.parseEther('0.0007') });
             expect(
@@ -293,7 +293,7 @@ describe('Wordle contract', function () {
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const guesses = convertToGuess(['a0', 'g1', 'r2', 'e3', 'e4']);
+            const guesses = convertLetterAndPositionToPrimes(['a0', 'g1', 'r2', 'e3', 'e4']);
             // console.log("Guesses: ", guesses);
 
             await instance.makeAttempt(guesses, { value: ethers.utils.parseEther('0.0007') });
@@ -352,7 +352,7 @@ describe('Wordle contract', function () {
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const guesses = convertToGuess(['a0', 'g1', 'r2', 'e3', 'e4']);
+            const guesses = convertLetterAndPositionToPrimes(['a0', 'g1', 'r2', 'e3', 'e4']);
             // console.log("Guesses: ", guesses);
 
             const attemptTx = await instance.callStatic.makeAttempt(guesses, {
@@ -381,7 +381,7 @@ describe('Wordle contract', function () {
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const newGuess = convertToGuess(['r0', 'e1', 'a2', 'l3', 's4']);
+            const newGuess = convertLetterAndPositionToPrimes(['r0', 'e1', 'a2', 'l3', 's4']);
             // console.log("Guesses: ", newGuess);
 
             const secondAttempt = await instance.callStatic.makeAttempt(newGuess, {
@@ -411,12 +411,18 @@ describe('Wordle contract', function () {
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const newGuess = convertToGuess(['r0', 'e1', 'a2', 'l3', 's4']);
+            const newGuess = convertLetterAndPositionToPrimes(['r0', 'e1', 'a2', 'l3', 's4']);
             // console.log("Guesses: ", newGuess);
 
             await expect(instance.makeAttempt(newGuess, { value: ethers.utils.parseEther('0.0007') }))
                 .to.emit(instance, 'PlayerMadeAttempt')
-                .withArgs(owner.address, 1, wordlePuzzleNo);
+                .withArgs(
+                    owner.address,
+                    1,
+                    wordlePuzzleNo,
+                    [true, false, false, true, false, true, false, true, true, false],
+                    false
+                );
         });
 
         it("should increase a player's attempt count after they complete an attempt", async function () {
@@ -426,23 +432,35 @@ describe('Wordle contract', function () {
             let attempts = 0;
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const newGuess = convertToGuess(['r0', 'e1', 'a2', 'l3', 's4']);
+            const newGuess = convertLetterAndPositionToPrimes(['r0', 'e1', 'a2', 'l3', 's4']);
             // console.log("Guesses: ", newGuess);
 
             await expect(instance.makeAttempt(newGuess, { value: ethers.utils.parseEther('0.0007') }))
                 .to.emit(instance, 'PlayerMadeAttempt')
-                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+                .withArgs(
+                    owner.address,
+                    ++attempts,
+                    wordlePuzzleNo,
+                    [true, false, false, true, false, true, false, true, true, false],
+                    false
+                );
 
             expect(
                 await instance.playerAttempts(wordlePuzzleNo, owner.address),
                 'Number of attempts does not equal expected value'
             ).to.equal(attempts);
 
-            const attempt = convertToGuess(['r0', 'a1', 'i2', 'l3', 's4']);
+            const attempt = convertLetterAndPositionToPrimes(['r0', 'a1', 'i2', 'l3', 's4']);
 
             await expect(instance.makeAttempt(attempt, { value: ethers.utils.parseEther('0.0007') }))
                 .to.emit(instance, 'PlayerMadeAttempt')
-                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+                .withArgs(
+                    owner.address,
+                    ++attempts,
+                    wordlePuzzleNo,
+                    [true, true, false, true, false, true, true, false, true, false],
+                    false
+                );
 
             expect(
                 await instance.playerAttempts(wordlePuzzleNo, owner.address),
@@ -456,7 +474,7 @@ describe('Wordle contract', function () {
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const guesses = convertToGuess(['a0', 'g1', 'r2', 'e3', 'e4']);
+            const guesses = convertLetterAndPositionToPrimes(['a0', 'g1', 'r2', 'e3', 'e4']);
 
             await expect(
                 instance.connect(addr1).makeAttempt(guesses, { value: ethers.utils.parseEther('0') })
@@ -470,42 +488,78 @@ describe('Wordle contract', function () {
             let attempts = 0;
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const newGuess = convertToGuess(['r0', 'e1', 'a2', 'l3', 's4']);
+            const newGuess = convertLetterAndPositionToPrimes(['r0', 'e1', 'a2', 'l3', 's4']);
             // console.log("Guesses: ", newGuess);
 
             await expect(instance.makeAttempt(newGuess, { value: ethers.utils.parseEther('0.0007') }))
                 .to.emit(instance, 'PlayerMadeAttempt')
-                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+                .withArgs(
+                    owner.address,
+                    ++attempts,
+                    wordlePuzzleNo,
+                    [true, false, false, true, false, true, false, true, true, false],
+                    false
+                );
             expect(
                 await instance.playerAttempts(wordlePuzzleNo, owner.address),
                 'Number of attempts does not equal expected value'
             ).to.equal(attempts);
 
-            const secondAttempt = convertToGuess(['r0', 'a1', 'i2', 'l3', 's4']);
+            const secondAttempt = convertLetterAndPositionToPrimes(['r0', 'a1', 'i2', 'l3', 's4']);
 
             await expect(instance.makeAttempt(secondAttempt, { value: ethers.utils.parseEther('0.0007') }))
                 .to.emit(instance, 'PlayerMadeAttempt')
-                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+                .withArgs(
+                    owner.address,
+                    ++attempts,
+                    wordlePuzzleNo,
+                    [true, true, false, true, false, true, true, false, true, false],
+                    false
+                );
             expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
 
             await expect(instance.makeAttempt(secondAttempt, { value: ethers.utils.parseEther('0.0007') }))
                 .to.emit(instance, 'PlayerMadeAttempt')
-                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+                .withArgs(
+                    owner.address,
+                    ++attempts,
+                    wordlePuzzleNo,
+                    [true, true, false, true, false, true, true, false, true, false],
+                    false
+                );
             expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
 
             await expect(instance.makeAttempt(secondAttempt, { value: ethers.utils.parseEther('0.0007') }))
                 .to.emit(instance, 'PlayerMadeAttempt')
-                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+                .withArgs(
+                    owner.address,
+                    ++attempts,
+                    wordlePuzzleNo,
+                    [true, true, false, true, false, true, true, false, true, false],
+                    false
+                );
             expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
 
             await expect(instance.makeAttempt(secondAttempt, { value: ethers.utils.parseEther('0.0007') }))
                 .to.emit(instance, 'PlayerMadeAttempt')
-                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+                .withArgs(
+                    owner.address,
+                    ++attempts,
+                    wordlePuzzleNo,
+                    [true, true, false, true, false, true, true, false, true, false],
+                    false
+                );
             expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
 
             await expect(instance.makeAttempt(secondAttempt, { value: ethers.utils.parseEther('0.0007') }))
                 .to.emit(instance, 'PlayerMadeAttempt')
-                .withArgs(owner.address, ++attempts, wordlePuzzleNo);
+                .withArgs(
+                    owner.address,
+                    ++attempts,
+                    wordlePuzzleNo,
+                    [true, true, false, true, false, true, true, false, true, false],
+                    false
+                );
             expect(await instance.playerAttempts(wordlePuzzleNo, owner.address)).to.equal(attempts);
 
             await expect(
@@ -521,7 +575,7 @@ describe('Wordle contract', function () {
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const newGuess = convertToGuess(['r0', 'e1', 'a2', 'l3', 's4']);
+            const newGuess = convertLetterAndPositionToPrimes(['r0', 'e1', 'a2', 'l3', 's4']);
             // console.log("Guesses: ", newGuess);
 
             await instance.connect(addr1).makeAttempt(newGuess, { value: ethers.utils.parseEther('0.0007') }); // actual
@@ -537,7 +591,7 @@ describe('Wordle contract', function () {
             // expect(attempt.isSolved, "Puzzle should not be solved yet").to.equal(false); // Is not solved yet.
             expect(await instance.playerPuzzleNumberSolved(addr1.address, wordlePuzzleNo)).to.equal(false);
 
-            const correctGuess = convertToGuess(['r0', 'a1', 'l2', 'l3', 'y4']);
+            const correctGuess = convertLetterAndPositionToPrimes(['r0', 'a1', 'l2', 'l3', 'y4']);
 
             await instance.connect(addr1).makeAttempt(correctGuess, { value: ethers.utils.parseEther('0.0007') });
 
@@ -562,7 +616,7 @@ describe('Wordle contract', function () {
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const correctGuess = convertToGuess(['r0', 'a1', 'l2', 'l3', 'y4']);
+            const correctGuess = convertLetterAndPositionToPrimes(['r0', 'a1', 'l2', 'l3', 'y4']);
 
             await expect(
                 instance.connect(addr1).makeAttempt(correctGuess, { value: ethers.utils.parseEther('0.0007') })
@@ -580,13 +634,13 @@ describe('Wordle contract', function () {
             const wordlePuzzleNo = await instance.wordlePuzzleNo();
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
 
-            const correctGuess = convertToGuess(['r0', 'a1', 'l2', 'l3', 'y4']);
+            const correctGuess = convertLetterAndPositionToPrimes(['r0', 'a1', 'l2', 'l3', 'y4']);
 
             await expect(
                 instance.connect(addr1).makeAttempt(correctGuess, { value: ethers.utils.parseEther('0.0007') })
             ).to.emit(instance, 'PlayerSolvedWordle');
 
-            const anyGuess = convertToGuess(['r0', 'e1', 'a2', 'l3', 's4']);
+            const anyGuess = convertLetterAndPositionToPrimes(['r0', 'e1', 'a2', 'l3', 's4']);
 
             await expect(
                 instance.connect(addr1).makeAttempt(anyGuess, { value: ethers.utils.parseEther('0.0007') })
@@ -600,7 +654,7 @@ describe('Wordle contract', function () {
             expect(wordlePuzzleNo, 'Puzzle number did not increment').to.equal(1);
             const numOfPuzzleSolved = await instance.playerPuzzleSolvedCount(addr1.address);
 
-            const correctGuess = convertToGuess(['r0', 'a1', 'l2', 'l3', 'y4']);
+            const correctGuess = convertLetterAndPositionToPrimes(['r0', 'a1', 'l2', 'l3', 'y4']);
 
             await expect(
                 instance.connect(addr1).makeAttempt(correctGuess, { value: ethers.utils.parseEther('0.0007') })
