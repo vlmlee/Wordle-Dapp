@@ -284,7 +284,6 @@ export default function Dapp() {
         return () => {
             document.removeEventListener('keypress', makeAttempt);
             document.removeEventListener('keydown', deletePreviousLetter);
-            document.removeEventListener('keydown', deletePreviousLetter);
             document.removeEventListener('keypress', enterLetter);
         };
     }, [makeAttempt, deletePreviousLetter, enterLetter]);
