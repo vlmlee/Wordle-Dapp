@@ -10,7 +10,8 @@ import { initialAttemptState, WORDLE_ACTIONS } from './reducers/WordleReducer';
 import WordleAddress from './contracts/contract-address.json';
 import WordleABI from './contracts/WordleABI.json';
 import './stylesheets/Wordle.scss';
-import { convertPrimesToLetterAndPosition } from './helpers/wordle-helpers';
+
+const Helpers = require('./helpers/wordle-helpers');
 
 export default function Dapp() {
     const [
@@ -214,7 +215,7 @@ export default function Dapp() {
                 const prevAttempts = await contract.getCurrentAttempts(account);
                 if (prevAttempts.length) {
                     const prevAttemptsStates = prevAttempts.map((attempt) => {
-                        const letters = convertPrimesToLetterAndPosition(attempt);
+                        const letters = Helpers.convertPrimesToLetterAndPosition(attempt);
                         return initialAttemptState.map((s, i) => {
                             return {
                                 ...s,

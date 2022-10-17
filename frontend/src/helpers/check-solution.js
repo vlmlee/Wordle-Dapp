@@ -1,9 +1,10 @@
 import Constants from './Constants';
 
-import { convertLetterAndPositionToPrimes, onlyUnique } from './wordle-helpers';
 import { ethers } from 'ethers';
 
 const wordBank = require('./wordBank.json');
+
+const Helpers = require('./wordle-helpers');
 
 const solveStatePriority = {
     [Constants.NOT_PRESENT_IN_SOLUTION]: 0,
@@ -17,7 +18,7 @@ function isWordInWordBank(word) {
 
 async function attemptToSolve(_contract, attempt) {
     const guess = attempt.map((a) => a.value + a.position);
-    return await _contract.makeAttempt(convertLetterAndPositionToPrimes(guess), {
+    return await _contract.makeAttempt(Helpers.convertLetterAndPositionToPrimes(guess), {
         value: ethers.utils.parseEther('0.0007')
     });
 }
@@ -25,7 +26,7 @@ async function attemptToSolve(_contract, attempt) {
 async function checkSolution(_answers, currentAttempt) {
     const facadeOfAnswers = [
         ...currentAttempt.map((x) => x.value + x.position),
-        ...currentAttempt.map((x) => x.value).filter(onlyUnique)
+        ...currentAttempt.map((x) => x.value).filter(Helpers.onlyUnique)
     ];
 
     return currentAttempt.map((letterInAttempt, index) => {
