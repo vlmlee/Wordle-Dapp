@@ -1,11 +1,11 @@
 import Constants from './Constants';
 
-import { convertToGuess } from './wordle-helpers';
+import { convertLetterAndPositionToPrimes } from './wordle-helpers';
 import { ethers } from 'ethers';
 
 const wordBank = require('./wordBank.json');
 
-const solution = ['r', 'e', 'c', 'a', 'p', '0r', '1e', '2c', '3a', '4p'];
+const solution = ['r0', 'e1', 'c2', 'a3', 'p4', 'r5', 'e5', 'c5', 'a5', 'p5'];
 
 const solveStatePriority = {
     [Constants.NOT_PRESENT_IN_SOLUTION]: 0,
@@ -19,11 +19,16 @@ function isWordInWordBank(word) {
 
 async function attemptToSolve(_contract, attempt) {
     const guess = attempt.map((a) => a.value + a.position);
-    const answer = await _contract.makeAttempt(convertToGuess(guess), { value: ethers.utils.parseEther('0.0007') });
-    return answer;
+    return await _contract.makeAttempt(convertLetterAndPositionToPrimes(guess), {
+        value: ethers.utils.parseEther('0.0007')
+    });
 }
 
-function checkSolution(currentState) {
+async function checkSolution() {}
+
+function updateSolveStates(currentState) {
+    const _letters = currentState.map((x) => x.value);
+
     const checkedSolution = currentState.map((letter) => {
         if (solution.includes(letter.value)) {
             const attemptContainsMultiple = currentState.filter((l) => l.value === letter.value).length > 1;
@@ -61,4 +66,4 @@ function checkSolution(currentState) {
     return checkedSolution;
 }
 
-export { isWordInWordBank, checkSolution, attemptToSolve, solveStatePriority };
+export { isWordInWordBank, checkSolution, updateSolveStates, attemptToSolve, solveStatePriority };

@@ -12,11 +12,20 @@ const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 const letterToPrime = (letter, index) =>
     BigNumber.from(`${primes[alphabet.length * index + alphabet.indexOf(letter.toLowerCase())]}`);
 
+const convertPrimesToLetterAndPosition = (arr) => {
+    return arr.map((_prime) => {
+        const indexOfPrime = primes.findIndex(_prime);
+        const letter = alphabet[indexOfPrime % (alphabet.length - 1)];
+        const position = Math.floor(indexOfPrime / (alphabet.length - 1));
+        return letter + position;
+    });
+};
+
 const onlyUnique = (value, index, self) => {
     return self.indexOf(value) === index;
 };
 
-const convertToGuess = (arr) => {
+const convertLetterAndPositionToPrimes = (arr) => {
     const guesses = arr.map((x) => x.split(''));
     return [
         ...guesses.map((x) => letterToPrime(x[0], x[1])),
@@ -68,5 +77,6 @@ module.exports = {
     alphabet,
     primes,
     powerMod,
-    convertToGuess
+    convertLetterAndPositionToPrimes,
+    convertPrimesToLetterAndPosition
 };
