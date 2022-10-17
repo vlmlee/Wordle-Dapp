@@ -202,7 +202,7 @@ export default function Dapp() {
 
     const playerHasAlreadySolvedWordleListener = useCallback(
         (_player, _wordlePuzzleNumber) => {
-            if (_wordlePuzzleNumber == wordlePuzzleNumber) {
+            if (_wordlePuzzleNumber === wordlePuzzleNumber) {
             }
         },
         [wordlePuzzleNumber]
@@ -250,6 +250,7 @@ export default function Dapp() {
                 }
             }
         }
+
         getPrevAttempts();
 
         async function getCurrentWordleNumber() {

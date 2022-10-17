@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Letter from './Letter';
 import FauxRow from './FauxRow';
 

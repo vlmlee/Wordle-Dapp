@@ -1,8 +1,7 @@
 import React from 'react';
-import Constants from '../helpers/Constants';
+import Constants, { QWERTY_KEYBOARD } from '../helpers/Constants';
 import '../stylesheets/Keyboard.scss';
 import { flatten } from 'lodash';
-import { QWERTY_KEYBOARD } from '../helpers/Constants';
 import { solveStatePriority } from '../helpers/check-solution';
 
 const Key = ({ _className, letter }) => <div className={_className}>{letter}</div>;

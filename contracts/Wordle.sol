@@ -136,7 +136,7 @@ contract Wordle {
         bool[][] storage answersArr = currentAnswers[msg.sender][wordlePuzzleNo];
         answersArr.push(answer);
 
-    playerAttempts[wordlePuzzleNo][msg.sender]++;
+        playerAttempts[wordlePuzzleNo][msg.sender]++;
 
         isSolved = checkIfSolved(answer);
 

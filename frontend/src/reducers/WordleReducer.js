@@ -1,6 +1,5 @@
 import Constants from '../helpers/Constants';
 import { flatten, uniq } from 'lodash';
-import { convertPrimesToLetterAndPosition } from '../helpers/wordle-helpers';
 
 const initialAttemptState = Array.from({ length: 5 }, (_, index) => {
     return {

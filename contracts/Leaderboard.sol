@@ -13,7 +13,7 @@ contract Leaderboard {
     event UserStakeAdded(address indexed _user, Stake _stake);
     event UserStakeWithdrawn(address indexed _user, Stake _stake);
 
-     modifier OnlyFacilitator() {
+    modifier OnlyFacilitator() {
         require(msg.sender == facilitator, "User is not the facilitator.");
         _;
     }
@@ -35,6 +35,7 @@ contract Leaderboard {
         uint8 currentId;
         uint8 size;
     }
+
     Rankings public rankings;
 
     struct Stake {
@@ -48,6 +49,7 @@ contract Leaderboard {
         mapping(uint8 => Stake[]) stakes;
         uint256 size;
     }
+
     UserStakes public userStakes;
 
     error UserAlreadyStaked(string _errorMessage);
@@ -145,10 +147,10 @@ contract Leaderboard {
         }
 
         Stake memory stake = Stake({
-            addr: msg.sender,
-            liquidity: msg.value,
-            id: _id,
-            name: _name
+        addr : msg.sender,
+        liquidity : msg.value,
+        id : _id,
+        name : _name
         });
 
         stakes.push(stake);
@@ -163,7 +165,7 @@ contract Leaderboard {
     function withdrawStake(address _user, uint8 _id) public virtual {
         require(msg.sender == _user || msg.sender == facilitator, "Transaction sender is neither the owner of the stake or the facilitator.");
         require(userStakes.stakes[_id].length > 0, "There are no stakes for this choice yet.");
-        
+
         Stake[] storage stakes = userStakes.stakes[_id];
         Stake memory stake;
         uint256 indexToRemove;
@@ -182,16 +184,17 @@ contract Leaderboard {
 
         uint256 userStakedAmount = stake.liquidity;
         assert(userStakedAmount > 0);
-        (bool success, ) = payable(_user).call{ value: userStakedAmount }("");
+        (bool success,) = payable(_user).call{value : userStakedAmount}("");
 
         if (success) {
             uint256 rewardPoolPrev = rewardPool;
             removeFromRewardPool(userStakedAmount);
             assert(rewardPool < rewardPoolPrev);
-            
+
             // Trick to remove unordered elements in an array in O(1) without needing to shift elements.
             delete stakes[indexToRemove];
-            stakes[indexToRemove] = stakes[stakes.length - 1]; // Copy the last element to the removed element's index.
+            stakes[indexToRemove] = stakes[stakes.length - 1];
+            // Copy the last element to the removed element's index.
             stakes.pop();
 
             if (userStakes.size > 0) {
@@ -242,13 +245,13 @@ contract Leaderboard {
 
             uint256 userStakedAmount = stake.liquidity;
             assert(userStakedAmount > 0);
-            (bool success, ) = payable(stake.addr).call{ value: userStakedAmount }("");
+            (bool success,) = payable(stake.addr).call{value : userStakedAmount}("");
 
             if (success) {
                 uint256 rewardPoolPrev = rewardPool;
                 removeFromRewardPool(userStakedAmount);
                 assert(rewardPool < rewardPoolPrev);
-                
+
                 if (userStakes.size > 0) {
                     userStakes.size--;
                 }
