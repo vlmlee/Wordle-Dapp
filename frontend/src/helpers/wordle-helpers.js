@@ -73,6 +73,7 @@ const powerMod = (base, exponent, modulus) => {
 module.exports = {
     calculateWitnesses,
     calculateAccumulator,
+    onlyUnique,
     letterToPrime,
     alphabet,
     primes,

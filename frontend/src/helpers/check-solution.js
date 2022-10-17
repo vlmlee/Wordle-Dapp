@@ -1,11 +1,9 @@
 import Constants from './Constants';
 
-import { convertLetterAndPositionToPrimes } from './wordle-helpers';
+import { convertLetterAndPositionToPrimes, onlyUnique } from './wordle-helpers';
 import { ethers } from 'ethers';
 
 const wordBank = require('./wordBank.json');
-
-const solution = ['r0', 'e1', 'c2', 'a3', 'p4', 'r5', 'e5', 'c5', 'a5', 'p5'];
 
 const solveStatePriority = {
     [Constants.NOT_PRESENT_IN_SOLUTION]: 0,
@@ -24,46 +22,38 @@ async function attemptToSolve(_contract, attempt) {
     });
 }
 
-async function checkSolution() {}
+async function checkSolution(_answers, currentAttempt) {
+    const facadeOfAnswers = [
+        ...currentAttempt.map((x) => x.value + x.position),
+        ...currentAttempt.map((x) => x.value).filter(onlyUnique)
+    ];
 
-function updateSolveStates(currentState) {
-    const _letters = currentState.map((x) => x.value);
-
-    const checkedSolution = currentState.map((letter) => {
-        if (solution.includes(letter.value)) {
-            const attemptContainsMultiple = currentState.filter((l) => l.value === letter.value).length > 1;
-            const solutionContainsMultiple =
-                solution.filter((s) => s.length > 1 && s.includes(letter.value)).length > 1;
-
-            if (solution.includes(letter.position + letter.value)) {
-                return {
-                    position: letter.position,
-                    value: letter.value,
-                    solveState: Constants.SOLVED
-                };
-            } else if (attemptContainsMultiple && !solutionContainsMultiple) {
-                return {
-                    position: letter.position,
-                    value: letter.value,
-                    solveState: Constants.NOT_PRESENT_IN_SOLUTION
-                };
-            } else {
-                return {
-                    position: letter.position,
-                    value: letter.value,
-                    solveState: Constants.WRONG_POSITION
-                };
-            }
+    return currentAttempt.map((letterInAttempt, index) => {
+        // check if the answer is in the correct position. If so, it is solved.
+        if (_answers[index]) {
+            return {
+                ...letterInAttempt,
+                solveState: Constants.SOLVED
+            };
         }
 
+        // If it's not in the correct position, check if it's in the set. `facadeOfAnswers` will give us a
+        // representation of the boolean values to letters. The returned array of booleans will always be
+        // the same length as the guess sent to the contract.
+        const indexOfLetterToCheckForMembership = facadeOfAnswers.indexOf(letterInAttempt.value);
+        if (_answers[indexOfLetterToCheckForMembership]) {
+            return {
+                ...letterInAttempt,
+                solveState: Constants.WRONG_POSITION
+            };
+        }
+
+        // If both conditions are false, then the letter was not in the solution.
         return {
-            position: letter.position,
-            value: letter.value,
+            ...letterInAttempt,
             solveState: Constants.NOT_PRESENT_IN_SOLUTION
         };
     });
-
-    return checkedSolution;
 }
 
-export { isWordInWordBank, checkSolution, updateSolveStates, attemptToSolve, solveStatePriority };
+export { isWordInWordBank, checkSolution, attemptToSolve, solveStatePriority };

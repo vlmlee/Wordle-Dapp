@@ -4,8 +4,8 @@ import Wordle from './components/Wordle';
 import Keyboard from './components/Keyboard';
 import Constants from './helpers/Constants';
 import { isEmpty } from 'lodash';
-import { isWordInWordBank, checkSolution } from './helpers/check-solution';
-import { ethers } from 'ethers';
+import { isWordInWordBank, checkSolution, attemptToSolve } from './helpers/check-solution';
+import { BigNumber, ethers } from 'ethers';
 import BaseReducer, { initialState } from './reducers/BaseReducer';
 import { WEB3_ACTIONS } from './reducers/Web3Reducer';
 import { WORDLE_ACTIONS } from './reducers/WordleReducer';
@@ -20,8 +20,6 @@ export default function Dapp() {
     ] = useReducer(BaseReducer, initialState);
 
     const web3Handler = async () => {
-        await window.ethereum.enable();
-
         const accounts = await window.ethereum.request({
             method: 'eth_requestAccounts'
         });
@@ -32,24 +30,9 @@ export default function Dapp() {
 
         const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-        // // if (chainId === 11155111) {
         const signer = provider.getSigner();
         await loadContract(provider, signer);
-        // }
     };
-
-    window.ethereum.on('accountsChanged', ([newAddress]) => {
-        if (newAddress !== undefined) {
-            dispatch({
-                type: WEB3_ACTIONS.UPDATE_ACCOUNT,
-                payload: newAddress
-            });
-        }
-    });
-
-    window.ethereum.on('chainChanged', ([chainId]) => {
-        // Only Sepolia testnet 11155111 is supported
-    });
 
     const loadContract = async (provider, signer) => {
         const _contract = new ethers.Contract(WordleAddress.address, WordleABI.abi, signer);
@@ -57,9 +40,33 @@ export default function Dapp() {
             type: WEB3_ACTIONS.UPDATE_CONTRACT,
             payload: _contract
         });
+
+        _contract.on('PlayerMadeAttempt', (_player, attemptNumber, _wordlePuzzleNo, _answer, isSolved) => {
+            // console.log(_player);
+            // console.log(attemptNumber);
+            // console.log(_wordlePuzzleNo);
+            // console.log(_answer);
+            // console.log(isSolved);
+
+            const checkedSolution = checkSolution(_answer, currentAttempt);
+
+            dispatch({
+                type: WORDLE_ACTIONS.ATTEMPT_SOLVE,
+                payload: {
+                    attemptNumber: attemptNumber + 1,
+                    previousAttempts: [...previousAttempts, checkedSolution]
+                }
+            });
+
+            if (isSolved) {
+                dispatch({
+                    type: WORDLE_ACTIONS.SOLVED_WORDLE
+                });
+            }
+        });
     };
 
-    const makeAttempt = (e) => {
+    const makeAttempt = async (e) => {
         if (!isWordleSolved && attemptNumber < 5 && e.key === 'Enter') {
             const word = currentAttempt
                 .map((state) => state.value)
@@ -74,26 +81,7 @@ export default function Dapp() {
                 return;
             }
 
-            const checkedSolution = checkSolution(currentAttempt);
-
-            dispatch({
-                type: WORDLE_ACTIONS.ATTEMPT_SOLVE,
-                payload: {
-                    attemptNumber: attemptNumber + 1,
-                    previousAttempts: [...previousAttempts, checkedSolution]
-                }
-            });
-
-            const _isSolved = checkedSolution.reduce((acc, cur) => {
-                acc = acc && cur.solveState === Constants.SOLVED;
-                return acc;
-            }, true);
-
-            if (_isSolved) {
-                dispatch({
-                    type: WORDLE_ACTIONS.SOLVED_WORDLE
-                });
-            }
+            await attemptToSolve(contract, currentAttempt);
         }
     };
 
