@@ -24,7 +24,7 @@ contract Wordle {
     ILeaderboard public leaderboard;
 
     event WithdrawalSuccessful(uint256 _value);
-    event PlayerMadeAttempt(address indexed _player, uint8 attemptNumber, uint256 _wordlePuzzleNo);
+    event PlayerMadeAttempt(address indexed _player, uint8 attemptNumber, uint256 _wordlePuzzleNo, bool[] _answer, bool isSolved);
     event PlayerSolvedWordle(address indexed _player);
     event LeaderboardSuccessfullyFunded(address indexed _leaderAddr, uint256 _amount);
     event CreatedNewWordlePuzzle(uint256 _accumulator, uint256 _modulus, uint256[] _witnesses);
@@ -64,6 +64,8 @@ contract Wordle {
     }
 
     receive() external payable {}
+
+    fallback() external payable {}
 
     function getCurrentAttempts(address _player) external view returns (uint256[][] memory) {
         return currentAttempts[_player];
@@ -126,9 +128,10 @@ contract Wordle {
         attemptsArr.push(guesses);
 
         playerAttempts[wordlePuzzleNo][msg.sender]++;
-        emit PlayerMadeAttempt(msg.sender, playerAttempts[wordlePuzzleNo][msg.sender], wordlePuzzleNo);
 
         isSolved = checkIfSolved(answer);
+
+        emit PlayerMadeAttempt(msg.sender, playerAttempts[wordlePuzzleNo][msg.sender], wordlePuzzleNo, answer, isSolved);
 
         if (isSolved) {
             if (playerPuzzleSolvedCount[msg.sender] == 0) playerPuzzleSolvedCountLength++;
