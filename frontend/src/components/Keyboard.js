@@ -3,6 +3,7 @@ import Constants from '../helpers/Constants';
 import '../stylesheets/Keyboard.scss';
 import { flatten } from 'lodash';
 import { QWERTY_KEYBOARD } from '../helpers/Constants';
+import { solveStatePriority } from '../helpers/check-solution';
 
 const Key = ({ _className, letter }) => <div className={_className}>{letter}</div>;
 
@@ -45,7 +46,16 @@ export default function Keyboard({ previousAttempts, currentAttempt, keysUsed })
 
     const determineKeyState = (key) => {
         if (isKeyUsed(key)) {
-            const foundKey = [...flatten(previousAttempts), currentAttempt].find((k) => k.value === key.toLowerCase());
+            const foundKeys = [...flatten(previousAttempts), currentAttempt].filter(
+                (k) => k.value === key.toLowerCase()
+            );
+            const foundKey = foundKeys.reduce((acc, cur) => {
+                if (solveStatePriority[cur.solveState] > solveStatePriority[acc.solveState]) {
+                    return cur;
+                }
+                return acc;
+            }, foundKeys[0]);
+
             const isSolved = foundKey?.solveState === Constants.SOLVED;
             const isInWrongPosition = foundKey?.solveState === Constants.WRONG_POSITION;
 

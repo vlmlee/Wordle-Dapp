@@ -7,6 +7,12 @@ const wordBank = require('./wordBank.json');
 
 const solution = ['r', 'e', 'c', 'a', 'p', '0r', '1e', '2c', '3a', '4p'];
 
+const solveStatePriority = {
+    [Constants.NOT_PRESENT_IN_SOLUTION]: 0,
+    [Constants.WRONG_POSITION]: 1,
+    [Constants.SOLVED]: 2
+};
+
 function isWordInWordBank(word) {
     return wordBank.includes(word.toLowerCase());
 }
@@ -55,4 +61,4 @@ function checkSolution(currentState) {
     return checkedSolution;
 }
 
-export { isWordInWordBank, checkSolution, attemptToSolve };
+export { isWordInWordBank, checkSolution, attemptToSolve, solveStatePriority };
