@@ -85,13 +85,14 @@ const WordleReducer = (state, action) => {
         case WORDLE_ACTIONS.SET_PREVIOUS_ATTEMPTS:
             return {
                 ...state,
-                previousAttempts: action.payload
+                previousAttempts: action.payload.previousAttempts,
+                attemptNumber: action.payload.attemptNumber
             };
         default:
             return state;
     }
 };
 
-export { baseWordleState, WORDLE_ACTIONS, WordleReducer };
+export { baseWordleState, WORDLE_ACTIONS, WordleReducer, initialAttemptState };
 
 export default WordleReducer;

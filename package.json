@@ -6,6 +6,7 @@
     "test": "hardhat test",
     "deploy-local": "npx hardhat run scripts/deploy.js --network localhost",
     "deploy-and-create-wordle": "npx hardhat run scripts/deploy.js --network localhost && npx hardhat run scripts/create-new-wordle-puzzle.js --network localhost",
+    "create-new-wordle-local": "npx hardhat run scripts/create-new-wordle-puzzle.js --network localhost",
     "deploy-sepolia": "npx hardhat run scripts/deploy.js --network sepolia",
     "deploy-wordle-and-create-puzzle-on-sepolia": "npx hardhat run scripts/deploy.js --network sepolia && npx hardhat run scripts/create-new-wordle-puzzle.js --network sepolia"
   },

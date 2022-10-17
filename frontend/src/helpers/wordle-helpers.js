@@ -1,4 +1,5 @@
-const { BigNumber } = require('ethers');
+const { BigNumber, isBigNumber } = require('ethers');
+
 const primes = [
     2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109,
     113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239,
@@ -14,8 +15,9 @@ const letterToPrime = (letter, index) =>
 
 const convertPrimesToLetterAndPosition = (arr) => {
     return arr.map((_prime) => {
-        const indexOfPrime = primes.findIndex(_prime);
-        const letter = alphabet[indexOfPrime % (alphabet.length - 1)];
+        const _nonHexPrime = _prime instanceof BigNumber ? _prime.toNumber() : _prime;
+        const indexOfPrime = primes.indexOf(_nonHexPrime);
+        const letter = alphabet[indexOfPrime % alphabet.length];
         const position = Math.floor(indexOfPrime / (alphabet.length - 1));
         return letter + position;
     });

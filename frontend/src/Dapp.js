@@ -6,10 +6,11 @@ import { attemptToSolve, checkSolution, isValidAttempt, isWordInWordBank } from 
 import { ethers } from 'ethers';
 import BaseReducer, { initialState } from './reducers/BaseReducer';
 import { WEB3_ACTIONS } from './reducers/Web3Reducer';
-import { WORDLE_ACTIONS } from './reducers/WordleReducer';
+import { initialAttemptState, WORDLE_ACTIONS } from './reducers/WordleReducer';
 import WordleAddress from './contracts/contract-address.json';
 import WordleABI from './contracts/WordleABI.json';
 import './stylesheets/Wordle.scss';
+import { convertPrimesToLetterAndPosition } from './helpers/wordle-helpers';
 
 export default function Dapp() {
     const [
@@ -178,7 +179,7 @@ export default function Dapp() {
 
     const contractEventListener = useCallback(
         (_player, _attemptNumber, _wordlePuzzleNo, _answer, isSolved) => {
-            if (isValidAttempt(currentAttempt)) {
+            if (isValidAttempt(currentAttempt) && _wordlePuzzleNo.toNumber() === wordlePuzzleNumber) {
                 checkSolution(_answer, currentAttempt).then((checkedSolution) => {
                     dispatch({
                         type: WORDLE_ACTIONS.ATTEMPT_SOLVE,
@@ -196,7 +197,7 @@ export default function Dapp() {
                 });
             }
         },
-        [currentAttempt]
+        [currentAttempt, wordlePuzzleNumber]
     );
 
     const playerHasAlreadySolvedWordleListener = useCallback(
@@ -206,6 +207,63 @@ export default function Dapp() {
         },
         [wordlePuzzleNumber]
     );
+
+    useEffect(() => {
+        async function getPrevAttempts() {
+            if (contract) {
+                const prevAttempts = await contract.getCurrentAttempts(account);
+                if (prevAttempts.length) {
+                    const prevAttemptsStates = prevAttempts.map((attempt) => {
+                        const letters = convertPrimesToLetterAndPosition(attempt);
+                        return initialAttemptState.map((s, i) => {
+                            return {
+                                ...s,
+                                value: letters[i][0]
+                            };
+                        });
+                    });
+
+                    // Don't really like this since it exposes what players have already tried. In the future,
+                    // we'd want to keep past results in local storage, but this won't fix the issue of not
+                    // having a suitable place for persistent storage without revealing information about the puzzle
+                    // to other players.
+                    const prevAnswers = await contract.getCurrentAnswers(account);
+
+                    let previousAttemptsWithSolveStates = [];
+
+                    for (let i = 0; i < prevAttemptsStates.length; i++) {
+                        const checkedSolution = await checkSolution(prevAnswers[i], prevAttemptsStates[i]);
+                        previousAttemptsWithSolveStates.push(checkedSolution);
+                    }
+
+                    dispatch({
+                        type: WORDLE_ACTIONS.SET_PREVIOUS_ATTEMPTS,
+                        payload: {
+                            previousAttempts: previousAttemptsWithSolveStates,
+                            attemptNumber: previousAttemptsWithSolveStates.length
+                        }
+                    });
+                    dispatch({
+                        type: WORDLE_ACTIONS.UPDATE_KEYS_USED,
+                        payload: ''
+                    });
+                }
+            }
+        }
+        getPrevAttempts();
+
+        async function getCurrentWordleNumber() {
+            if (contract) {
+                const currentWordleNumber = await contract.wordlePuzzleNo();
+                dispatch({
+                    type: WORDLE_ACTIONS.UPDATE_WORDLE_PUZZLE_NUMBER,
+                    payload: currentWordleNumber.toNumber()
+                });
+            }
+        }
+
+        getCurrentWordleNumber();
+    }, [contract]);
 
     useEffect(() => {
         document.addEventListener('keypress', makeAttempt);
@@ -229,9 +287,10 @@ export default function Dapp() {
         return () => {
             if (contract) {
                 contract.off('PlayerMadeAttempt', contractEventListener);
+                contract.off('PlayerSolvedWordle', playerHasAlreadySolvedWordleListener);
             }
         };
-    }, [contract, contractEventListener]);
+    }, [contract, contractEventListener, playerHasAlreadySolvedWordleListener, wordlePuzzleNumber]);
 
     return (
         <div>

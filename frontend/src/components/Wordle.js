@@ -30,16 +30,19 @@ export default function Wordle({ previousAttempts, currentAttempt, attemptNumber
 
     return (
         <div className="wordle">
-            {previousAttempts.length > 0 && <div className={'previous-attempts'}>{generatedPreviousAttempts()}</div>}
+            {previousAttempts && previousAttempts.length > 0 && (
+                <div className={'previous-attempts'}>{generatedPreviousAttempts()}</div>
+            )}
             <div className={`current-attempt ${error ? 'current-attempt--animate' : ''}`}>
-                {currentAttempt.map((letter, i) => (
-                    <Letter
-                        key={`current-attempt__letter-${i}`}
-                        position={letter.position}
-                        solveState={letter.solveState}
-                        value={letter.value}
-                    />
-                ))}
+                {currentAttempt &&
+                    currentAttempt.map((letter, i) => (
+                        <Letter
+                            key={`current-attempt__letter-${i}`}
+                            position={letter.position}
+                            solveState={letter.solveState}
+                            value={letter.value}
+                        />
+                    ))}
             </div>
             <div className={'empty-rows'}>{generateEmptyRows()}</div>
         </div>

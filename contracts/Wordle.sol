@@ -32,8 +32,8 @@ contract Wordle {
     mapping(uint => mapping(address => uint8)) public playerAttempts;
     uint256 public playerAttemptsLength;
 
-    mapping(address => uint256[][]) public currentAttempts;
-    mapping(address => bool[][]) public currentAnswers;
+    mapping(address => mapping(uint256 => uint256[][])) public currentAttempts;
+    mapping(address => mapping(uint256 => bool[][])) public currentAnswers;
     address[] public players;
 
     mapping(address => uint256) public playerPuzzleSolvedCount;
@@ -69,11 +69,11 @@ contract Wordle {
     fallback() external payable {}
 
     function getCurrentAttempts(address _player) external view returns (uint256[][] memory) {
-        return currentAttempts[_player];
+        return currentAttempts[_player][wordlePuzzleNo];
     }
 
     function getCurrentAnswers(address _player) external view returns (bool[][] memory) {
-        return currentAnswers[_player];
+        return currentAnswers[_player][wordlePuzzleNo];
     }
 
     function getPlayers() external view returns (address[] memory) {
@@ -130,10 +130,10 @@ contract Wordle {
             players.push(msg.sender);
         }
 
-        uint256[][] storage attemptsArr = currentAttempts[msg.sender];
+        uint256[][] storage attemptsArr = currentAttempts[msg.sender][wordlePuzzleNo];
         attemptsArr.push(guesses);
 
-        bool[][] storage answersArr = currentAnswers[msg.sender];
+        bool[][] storage answersArr = currentAnswers[msg.sender][wordlePuzzleNo];
         answersArr.push(answer);
 
     playerAttempts[wordlePuzzleNo][msg.sender]++;
@@ -152,7 +152,10 @@ contract Wordle {
 
     function resetAllAttempts() public MustBeOwner {
         for (uint256 i = 0; i < players.length; i++) {
-            delete currentAttempts[players[i]];
+            for (uint256 j = 0; j <= wordlePuzzleNo; j++) {
+                delete currentAttempts[players[i]][j];
+                delete currentAnswers[players[i]][j];
+            }
         }
         wordlePuzzleNo++;
     }
