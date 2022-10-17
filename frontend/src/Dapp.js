@@ -1,11 +1,9 @@
-import React, { useCallback, useMemo, useReducer } from 'react';
-import { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useReducer } from 'react';
 import Wordle from './components/Wordle';
 import Keyboard from './components/Keyboard';
 import Constants from './helpers/Constants';
-import { isEmpty } from 'lodash';
-import { isWordInWordBank, checkSolution, attemptToSolve } from './helpers/check-solution';
-import { BigNumber, ethers } from 'ethers';
+import { attemptToSolve, checkSolution, isValidAttempt, isWordInWordBank } from './helpers/check-solution';
+import { ethers } from 'ethers';
 import BaseReducer, { initialState } from './reducers/BaseReducer';
 import { WEB3_ACTIONS } from './reducers/Web3Reducer';
 import { WORDLE_ACTIONS } from './reducers/WordleReducer';
@@ -39,30 +37,6 @@ export default function Dapp() {
         dispatch({
             type: WEB3_ACTIONS.UPDATE_CONTRACT,
             payload: _contract
-        });
-
-        _contract.on('PlayerMadeAttempt', (_player, attemptNumber, _wordlePuzzleNo, _answer, isSolved) => {
-            // console.log(_player);
-            // console.log(attemptNumber);
-            // console.log(_wordlePuzzleNo);
-            // console.log(_answer);
-            // console.log(isSolved);
-
-            const checkedSolution = checkSolution(_answer, currentAttempt);
-
-            dispatch({
-                type: WORDLE_ACTIONS.ATTEMPT_SOLVE,
-                payload: {
-                    attemptNumber: attemptNumber + 1,
-                    previousAttempts: [...previousAttempts, checkedSolution]
-                }
-            });
-
-            if (isSolved) {
-                dispatch({
-                    type: WORDLE_ACTIONS.SOLVED_WORDLE
-                });
-            }
         });
     };
 
@@ -192,21 +166,53 @@ export default function Dapp() {
         }
     };
 
+    const contractEventListener = useCallback(
+        (_player, _attemptNumber, _wordlePuzzleNo, _answer, isSolved) => {
+            if (isValidAttempt(currentAttempt)) {
+                checkSolution(_answer, currentAttempt).then((checkedSolution) => {
+                    dispatch({
+                        type: WORDLE_ACTIONS.ATTEMPT_SOLVE,
+                        payload: {
+                            attemptNumber: _attemptNumber,
+                            previousAttempts: [...previousAttempts, checkedSolution]
+                        }
+                    });
+
+                    if (isSolved) {
+                        dispatch({
+                            type: WORDLE_ACTIONS.SOLVED_WORDLE
+                        });
+                    }
+                });
+            }
+        },
+        [currentAttempt]
+    );
+
     useEffect(() => {
         document.addEventListener('keypress', makeAttempt);
         document.addEventListener('keydown', deletePreviousLetter);
         document.addEventListener('keypress', enterLetter);
 
-        if (!isEmpty(contract)) {
-            // get attempts, etc
-        }
-
         return () => {
             document.removeEventListener('keypress', makeAttempt);
+            document.removeEventListener('keydown', deletePreviousLetter);
             document.removeEventListener('keydown', deletePreviousLetter);
             document.removeEventListener('keypress', enterLetter);
         };
     }, [makeAttempt, deletePreviousLetter, enterLetter]);
+
+    useEffect(() => {
+        if (contract) {
+            contract.on('PlayerMadeAttempt', contractEventListener, { fromBlock: 'latest' });
+        }
+
+        return () => {
+            if (contract) {
+                contract.off('PlayerMadeAttempt', contractEventListener);
+            }
+        };
+    }, [contract, contractEventListener]);
 
     return (
         <div>

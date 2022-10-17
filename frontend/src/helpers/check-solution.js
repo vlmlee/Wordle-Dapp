@@ -56,4 +56,10 @@ async function checkSolution(_answers, currentAttempt) {
     });
 }
 
-export { isWordInWordBank, checkSolution, attemptToSolve, solveStatePriority };
+function isValidAttempt(currentAttempt) {
+    return currentAttempt.reduce((acc, cur) => {
+        return cur.value && acc;
+    }, true);
+}
+
+export { isWordInWordBank, checkSolution, attemptToSolve, solveStatePriority, isValidAttempt };
