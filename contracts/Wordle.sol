@@ -25,7 +25,7 @@ contract Wordle {
 
     event WithdrawalSuccessful(uint256 _value);
     event PlayerMadeAttempt(address indexed _player, uint8 attemptNumber, uint256 _wordlePuzzleNo, bool[] _answer, bool isSolved);
-    event PlayerSolvedWordle(address indexed _player);
+    event PlayerSolvedWordle(address indexed _player, uint256 _wordlePuzzleNo);
     event LeaderboardSuccessfullyFunded(address indexed _leaderAddr, uint256 _amount);
     event CreatedNewWordlePuzzle(uint256 _accumulator, uint256 _modulus, uint256[] _witnesses);
 
@@ -137,7 +137,7 @@ contract Wordle {
             if (playerPuzzleSolvedCount[msg.sender] == 0) playerPuzzleSolvedCountLength++;
             playerPuzzleSolvedCount[msg.sender]++;
             playerPuzzleNumberSolved[msg.sender][wordlePuzzleNo] = true;
-            emit PlayerSolvedWordle(msg.sender);
+            emit PlayerSolvedWordle(msg.sender, wordlePuzzleNo);
         }
     }
 

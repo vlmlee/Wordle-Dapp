@@ -10,6 +10,7 @@ const initialAttemptState = Array.from({ length: 5 }, (_, index) => {
 });
 
 const baseWordleState = {
+    wordlePuzzleNumber: 0,
     attemptNumber: 0,
     previousAttempts: [],
     keysUsed: [],
@@ -25,7 +26,8 @@ const WORDLE_ACTIONS = {
     CREATE_NEW_WORDLE: 'CREATE_NEW_WORDLE',
     UPDATE_CURRENT_ATTEMPT: 'UPDATE_CURRENT_ATTEMPT',
     ATTEMPT_SOLVE: 'ATTEMPT_SOLVE',
-    UPDATE_ERROR: 'UPDATE_ERROR'
+    UPDATE_ERROR: 'UPDATE_ERROR',
+    UPDATE_WORDLE_PUZZLE_NUMBER: 'UPDATE_WORDLE_PUZZLE_NUMBER'
 };
 
 const WordleReducer = (state, action) => {
@@ -72,6 +74,11 @@ const WordleReducer = (state, action) => {
             return {
                 ...state,
                 error: action.payload
+            };
+        case WORDLE_ACTIONS.UPDATE_WORDLE_PUZZLE_NUMBER:
+            return {
+                ...state,
+                wordlePuzzleNumber: action.payload
             };
         default:
             return state;

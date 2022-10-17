@@ -70,6 +70,13 @@
         }
     }
 
+    &__address {
+        text-align: center;
+        color: #00000090;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
     &--connected {
         background-color: #6aaa64;
         color: white;

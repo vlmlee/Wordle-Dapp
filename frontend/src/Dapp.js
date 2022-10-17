@@ -13,7 +13,17 @@ import './stylesheets/Wordle.scss';
 
 export default function Dapp() {
     const [
-        { attemptNumber, previousAttempts, keysUsed, isWordleSolved, currentAttempt, account, contract, error },
+        {
+            attemptNumber,
+            previousAttempts,
+            keysUsed,
+            isWordleSolved,
+            currentAttempt,
+            account,
+            contract,
+            error,
+            wordlePuzzleNumber
+        },
         dispatch
     ] = useReducer(BaseReducer, initialState);
 
@@ -189,6 +199,14 @@ export default function Dapp() {
         [currentAttempt]
     );
 
+    const playerHasAlreadySolvedWordleListener = useCallback(
+        (_player, _wordlePuzzleNumber) => {
+            if (_wordlePuzzleNumber == wordlePuzzleNumber) {
+            }
+        },
+        [wordlePuzzleNumber]
+    );
+
     useEffect(() => {
         document.addEventListener('keypress', makeAttempt);
         document.addEventListener('keydown', deletePreviousLetter);
@@ -205,6 +223,7 @@ export default function Dapp() {
     useEffect(() => {
         if (contract) {
             contract.on('PlayerMadeAttempt', contractEventListener, { fromBlock: 'latest' });
+            contract.on('PlayerSolvedWordle', playerHasAlreadySolvedWordleListener);
         }
 
         return () => {
@@ -222,6 +241,13 @@ export default function Dapp() {
                     onClick={web3Handler}
                 >
                     {account ? 'Connected' : 'Connect Wallet'}
+                </div>
+                <div className={`connect-wallet__address`}>
+                    {account && (
+                        <>
+                            ({account.slice(0, 4)}...{account.slice(account.length - 4)})
+                        </>
+                    )}
                 </div>
             </div>
             <h1 className={'wordle__header'}>Wordle</h1>
