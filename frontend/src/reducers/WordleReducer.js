@@ -1,5 +1,6 @@
 import Constants from '../helpers/Constants';
 import { flatten, uniq } from 'lodash';
+import { convertPrimesToLetterAndPosition } from '../helpers/wordle-helpers';
 
 const initialAttemptState = Array.from({ length: 5 }, (_, index) => {
     return {
@@ -27,7 +28,8 @@ const WORDLE_ACTIONS = {
     UPDATE_CURRENT_ATTEMPT: 'UPDATE_CURRENT_ATTEMPT',
     ATTEMPT_SOLVE: 'ATTEMPT_SOLVE',
     UPDATE_ERROR: 'UPDATE_ERROR',
-    UPDATE_WORDLE_PUZZLE_NUMBER: 'UPDATE_WORDLE_PUZZLE_NUMBER'
+    UPDATE_WORDLE_PUZZLE_NUMBER: 'UPDATE_WORDLE_PUZZLE_NUMBER',
+    SET_PREVIOUS_ATTEMPTS: 'SET_PREVIOUS_ATTEMPTS'
 };
 
 const WordleReducer = (state, action) => {
@@ -79,6 +81,11 @@ const WordleReducer = (state, action) => {
             return {
                 ...state,
                 wordlePuzzleNumber: action.payload
+            };
+        case WORDLE_ACTIONS.SET_PREVIOUS_ATTEMPTS:
+            return {
+                ...state,
+                previousAttempts: action.payload
             };
         default:
             return state;
