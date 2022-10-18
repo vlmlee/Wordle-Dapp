@@ -4,7 +4,7 @@ Come play with it live [here](https://master.dme99r4sotkse.amplifyapp.com/).
 
 ## Deploying to Sepolia Testnet with Infura
 
-First, create a `.env` file and put in your Infura credentials (make sure to `.gitignore` this file):
+If you want to deploy your own version, first create a `.env` file and put in your Infura credentials (make sure to `.gitignore` this file):
 
 ```shell
 INFURA_URL="https://sepolia.infura.io/v3/"
