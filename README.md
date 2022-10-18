@@ -2,7 +2,7 @@
 
 Come play with it live [here](https://master.dme99r4sotkse.amplifyapp.com/).
 
-To deploy your own Wordle smart contract, create your own `.env` file and put in your Infura credentials like so:
+To deploy your own Wordle smart contract, create your own `.env` file and put in your Infura credentials:
 
 ```shell
 INFURA_URL="https://sepolia.infura.io/v3/"
