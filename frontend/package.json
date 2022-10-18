@@ -18,6 +18,9 @@
     "build": "react-scripts build && cp -a src/contracts build",
     "eject": "react-scripts eject"
   },
+  "overrides": {
+    "autoprefixer": "10.4.5"
+  },
   "eslintConfig": {
     "extends": "react-app"
   },

@@ -72,7 +72,7 @@ const powerMod = (base, exponent, modulus) => {
     return result;
 };
 
-export default {
+export const Helpers = {
     calculateWitnesses,
     calculateAccumulator,
     onlyUnique,
@@ -83,3 +83,5 @@ export default {
     convertLetterAndPositionToPrimes,
     convertPrimesToLetterAndPosition
 };
+
+export default Helpers;
