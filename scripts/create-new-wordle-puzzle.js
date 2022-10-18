@@ -1,9 +1,4 @@
-const {
-    letterToPrime,
-    primes,
-    calculateAccumulator,
-    calculateWitnesses
-} = require('../frontend/src/helpers/wordle-helpers');
+const { letterToPrime, primes, calculateAccumulator, calculateWitnesses } = require('./helpers/wordle-helpers');
 
 const { network, ethers, artifacts } = require('hardhat');
 

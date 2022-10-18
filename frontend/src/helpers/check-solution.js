@@ -2,9 +2,9 @@ import Constants from './Constants';
 
 import { ethers } from 'ethers';
 
-const wordBank = require('./wordBank.json');
+import wordBank from './wordBank.json';
 
-const Helpers = require('./wordle-helpers');
+import Helpers from './wordle-helpers';
 
 const solveStatePriority = {
     [Constants.NOT_PRESENT_IN_SOLUTION]: 0,
