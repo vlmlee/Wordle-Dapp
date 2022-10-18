@@ -15,7 +15,7 @@ ADDRESS="<your-wallet-address>"
 SOLUTION="<your-wordle-solution>"
 ```
 
-Then deploy your verison onto the Sepolia testnet with:
+Then deploy your version onto the Sepolia testnet with:
 
 ```shell
 npm run deploy-wordle-and-create-puzzle-on-sepolia
