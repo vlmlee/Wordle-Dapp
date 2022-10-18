@@ -21,15 +21,13 @@ Then to deploy the smart contract onto the Sepolia testnet, run:
 npm run deploy-wordle-and-create-puzzle-on-sepolia
 ```
 
-When the script finishes, the console will print out the deployer's wallet address and the contract's deployed address.
-
-If you want to create a new Wordle puzzle, edit the `$SOLUTION` environment variable and then run:
+When the script finishes, the console will print out the deployer's wallet address and the contract's deployed address. If you want to create a new Wordle puzzle, edit the `$SOLUTION` environment variable and then run:
 
 ```shell
 npm run create-new-wordle-sepolia
 ```
 
-To interact with the smart contract, you'll need a frontend so run:
+To interact with the smart contract, you'll need a frontend so in the command line, run:
 
 ```shell
 cd frontend
