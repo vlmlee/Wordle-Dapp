@@ -4,7 +4,7 @@ Come play with it live [here](https://master.dme99r4sotkse.amplifyapp.com/).
 
 ## Deploying to Sepolia Testnet with Infura
 
-If you want to deploy your own version, first create a `.env` file and put in your Infura credentials (make sure to `.gitignore` this file):
+If you'd like to deploy your own version, first create a `.env` file at the root of the project and put in your Infura credentials (make sure to `.gitignore` this file):
 
 ```shell
 INFURA_URL="https://sepolia.infura.io/v3/"
@@ -15,7 +15,7 @@ ADDRESS="<your-wallet-address>"
 SOLUTION="<your-wordle-solution>"
 ```
 
-Then to deploy the smart contract onto the Sepolia testnet, run:
+Then deploy the contract onto the Sepolia testnet with:
 
 ```shell
 npm run deploy-wordle-and-create-puzzle-on-sepolia
