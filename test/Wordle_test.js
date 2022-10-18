@@ -10,7 +10,7 @@ const {
     calculateWitnesses,
     powerMod,
     convertLetterAndPositionToPrimes
-} = require('../frontend/src/helpers/wordle-helpers');
+} = require('../scripts/helpers/wordle-helpers');
 
 describe('Wordle contract', function () {
     async function deployWordleFixture() {
