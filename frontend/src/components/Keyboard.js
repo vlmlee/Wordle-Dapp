@@ -13,8 +13,7 @@ const insertEnterKey = (determineKeyState, letter, j) => {
         <React.Fragment key={`fragment-${j}`}>
             <div
                 key={`keyboard__enter-key-${j}`}
-                className={`keyboard__key keyboard__enter-key keyboard__key--UNUSED_LETTER`}
-            >
+                className={`keyboard__key keyboard__enter-key keyboard__key--UNUSED_LETTER`}>
                 ENTER
             </div>
             <Key key={`keyboard__key-${j}`} _className={_className} letter={letter} />
@@ -30,8 +29,7 @@ const insertBackspaceKey = (determineKeyState, letter, j) => {
             <Key key={`keyboard__key-${j}`} _className={_className} letter={letter} />
             <div
                 key={`keyboard__backspace-key-${j}`}
-                className={'keyboard__key keyboard__backspace-key keyboard__key--UNUSED_LETTER'}
-            >
+                className={'keyboard__key keyboard__backspace-key keyboard__key--UNUSED_LETTER'}>
                 <img src="backspace-svgrepo-com.svg" alt="svg" />
             </div>
         </React.Fragment>
@@ -39,15 +37,13 @@ const insertBackspaceKey = (determineKeyState, letter, j) => {
 };
 
 export default function Keyboard({ previousAttempts, currentAttempt, keysUsed }) {
-    const isKeyUsed = (key) => {
+    const isKeyUsed = key => {
         return keysUsed?.includes(key.toLowerCase());
     };
 
-    const determineKeyState = (key) => {
+    const determineKeyState = key => {
         if (isKeyUsed(key)) {
-            const foundKeys = [...flatten(previousAttempts), currentAttempt].filter(
-                (k) => k.value === key.toLowerCase()
-            );
+            const foundKeys = [...flatten(previousAttempts), currentAttempt].filter(k => k.value === key.toLowerCase());
             const foundKey = foundKeys.reduce((acc, cur) => {
                 if (solveStatePriority[cur.solveState] > solveStatePriority[acc.solveState]) {
                     return cur;

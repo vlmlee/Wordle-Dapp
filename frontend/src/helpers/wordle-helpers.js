@@ -1,4 +1,4 @@
-import { BigNumber, isBigNumber } from 'ethers';
+import { BigNumber } from 'ethers';
 
 const primes = [
     2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109,
@@ -13,8 +13,8 @@ const alphabet = 'abcdefghijklmnopqrstuvwxyz';
 const letterToPrime = (letter, index) =>
     BigNumber.from(`${primes[alphabet.length * index + alphabet.indexOf(letter.toLowerCase())]}`);
 
-const convertPrimesToLetterAndPosition = (arr) => {
-    return arr.map((_prime) => {
+const convertPrimesToLetterAndPosition = arr => {
+    return arr.map(_prime => {
         const _nonHexPrime = _prime instanceof BigNumber ? _prime.toNumber() : _prime;
         const indexOfPrime = primes.indexOf(_nonHexPrime);
         const letter = alphabet[indexOfPrime % alphabet.length];
@@ -27,14 +27,14 @@ const onlyUnique = (value, index, self) => {
     return self.indexOf(value) === index;
 };
 
-const convertLetterAndPositionToPrimes = (arr) => {
-    const guesses = arr.map((x) => x.split(''));
+const convertLetterAndPositionToPrimes = arr => {
+    const guesses = arr.map(x => x.split(''));
     return [
-        ...guesses.map((x) => letterToPrime(x[0], x[1])),
+        ...guesses.map(x => letterToPrime(x[0], x[1])),
         ...guesses
-            .map((x) => x[0])
+            .map(x => x[0])
             .filter(onlyUnique)
-            .map((x) => letterToPrime(x[0], 5))
+            .map(x => letterToPrime(x[0], 5))
     ];
 };
 

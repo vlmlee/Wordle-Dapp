@@ -29,7 +29,7 @@ describe('Wordle contract', function () {
         await instance.deployed();
 
         const solution = ['r0', 'A1', 'l2', 'L3', 'y4', 'r5', 'a5', 'l5', 'y5'];
-        const _primes = solution.map((letterPosition) => {
+        const _primes = solution.map(letterPosition => {
             const [letter, position] = letterPosition.split('');
             return letterToPrime(letter, position);
         });
@@ -121,7 +121,7 @@ describe('Wordle contract', function () {
             const { instance, addr1 } = await loadFixture(deployWordleFixture);
 
             const solution = ['r0', 'A1', 'l2', 'L3', 'y4', 'r5', 'a5', 'l5', 'y5'];
-            const _primes = solution.map((letterPosition) => {
+            const _primes = solution.map(letterPosition => {
                 const [letter, position] = letterPosition.split('');
                 return letterToPrime(letter, position);
             });
@@ -698,7 +698,7 @@ describe('Wordle contract', function () {
 
                 const solution = ['r0', 'A1', 'l2', 'L3', 'y4', 'r5', 'a5', 'l5', 'y5'];
 
-                const _primes = solution.map((letterPosition) => {
+                const _primes = solution.map(letterPosition => {
                     const [letter, position] = letterPosition.split('');
                     return letterToPrime(letter, position);
                 });
@@ -742,7 +742,7 @@ describe('Wordle contract', function () {
                 const { instance } = await loadFixture(deployWordleFixture);
 
                 const solution = ['r0', 'A1', 'l2', 'L3', 'y4', 'r5', 'a5', 'l5', 'y5'];
-                const _primes = solution.map((letterPosition) => {
+                const _primes = solution.map(letterPosition => {
                     const [letter, position] = letterPosition.split('');
                     return letterToPrime(letter, position);
                 });
@@ -821,7 +821,7 @@ describe('Wordle contract', function () {
                         testSet[i]
                             .toString(2)
                             .split('')
-                            .map((x) => +x)
+                            .map(x => +x)
                     );
                 }
             });

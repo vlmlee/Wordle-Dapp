@@ -14,7 +14,7 @@ async function createNewWordlePuzzle() {
     const instance = new ethers.Contract('0x4333141C15060Fe9e763655849E31aB6E96C80AA', WordleABI.abi, wallet);
 
     const solution = ['r0', 'A1', 'l2', 'L3', 'y4', 'r5', 'a5', 'l5', 'y5'];
-    const _primes = solution.map((letterPosition) => {
+    const _primes = solution.map(letterPosition => {
         const [letter, position] = letterPosition.split('');
         return letterToPrime(letter, position);
     });
@@ -43,7 +43,7 @@ async function createNewWordlePuzzle() {
 
 createNewWordlePuzzle()
     .then(() => process.exit(0))
-    .catch((error) => {
+    .catch(error => {
         console.error(error);
         process.exit(1);
     });

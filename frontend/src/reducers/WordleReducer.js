@@ -39,13 +39,13 @@ const WordleReducer = (state, action) => {
                 attempts: state.attemptNumber++
             };
         case WORDLE_ACTIONS.UPDATE_KEYS_USED:
-            const previouslyUsedKeys = flatten(state.previousAttempts).map((a) => a.value);
+            const previouslyUsedKeys = flatten(state.previousAttempts).map(a => a.value);
             const isKeyAlreadyUsed = previouslyUsedKeys.includes(action.payload);
             if (isKeyAlreadyUsed) return state;
 
             const keysUsed = uniq([
                 ...previouslyUsedKeys,
-                ...state.currentAttempt.filter((a) => !!a.value).map((p) => p.value)
+                ...state.currentAttempt.filter(a => !!a.value).map(p => p.value)
             ]);
 
             return {

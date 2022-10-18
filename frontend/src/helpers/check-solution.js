@@ -17,7 +17,7 @@ function isWordInWordBank(word) {
 }
 
 async function attemptToSolve(_contract, attempt) {
-    const guess = attempt.map((a) => a.value + a.position);
+    const guess = attempt.map(a => a.value + a.position);
     return await _contract.makeAttempt(Helpers.convertLetterAndPositionToPrimes(guess), {
         value: ethers.utils.parseEther('0.0008'),
         gasLimit: 10000000
@@ -26,8 +26,8 @@ async function attemptToSolve(_contract, attempt) {
 
 async function checkSolution(_answers, currentAttempt) {
     const facadeOfAnswers = [
-        ...currentAttempt.map((x) => x.value + x.position),
-        ...currentAttempt.map((x) => x.value).filter(Helpers.onlyUnique)
+        ...currentAttempt.map(x => x.value + x.position),
+        ...currentAttempt.map(x => x.value).filter(Helpers.onlyUnique)
     ];
 
     return currentAttempt.map((letterInAttempt, index) => {

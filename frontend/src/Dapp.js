@@ -72,10 +72,10 @@ export default function Dapp() {
     });
 
     const makeAttempt = useCallback(
-        async (e) => {
+        async e => {
             if (isConnected && !isWordleSolved && attemptNumber < 5 && e.key === 'Enter') {
                 const word = currentAttempt
-                    .map((state) => state.value)
+                    .map(state => state.value)
                     .join('')
                     .toLowerCase();
 
@@ -94,7 +94,7 @@ export default function Dapp() {
     );
 
     const deletePreviousLetter = useCallback(
-        (e) => {
+        e => {
             if (error) {
                 dispatch({
                     type: WORDLE_ACTIONS.UPDATE_ERROR,
@@ -103,7 +103,7 @@ export default function Dapp() {
             }
 
             if (!isWordleSolved && attemptNumber < 5 && (e.key === 'Backspace' || e.key === 'Delete')) {
-                const letterAfterDesiredPositionToInvalidate = currentAttempt.find((a) => a.value === '');
+                const letterAfterDesiredPositionToInvalidate = currentAttempt.find(a => a.value === '');
 
                 if (!letterAfterDesiredPositionToInvalidate) {
                     dispatch({
@@ -162,10 +162,10 @@ export default function Dapp() {
     );
 
     const enterLetter = useCallback(
-        (e) => {
+        e => {
             if (isConnected && !isWordleSolved && e.keyCode >= 65 && e.keyCode <= 122) {
                 const letterUsed = e.key?.toLowerCase();
-                const positionToInsert = currentAttempt.find((a) => a.value === '');
+                const positionToInsert = currentAttempt.find(a => a.value === '');
 
                 if (positionToInsert?.position === 0) {
                     dispatch({
@@ -209,7 +209,7 @@ export default function Dapp() {
     const contractEventListener = useCallback(
         (_player, _attemptNumber, _wordlePuzzleNo, _answer, isSolved) => {
             if (isValidAttempt(currentAttempt) && _wordlePuzzleNo.toNumber() === wordlePuzzleNumber) {
-                checkSolution(_answer, currentAttempt).then((checkedSolution) => {
+                checkSolution(_answer, currentAttempt).then(checkedSolution => {
                     dispatch({
                         type: WORDLE_ACTIONS.ATTEMPT_SOLVE,
                         payload: {
@@ -242,7 +242,7 @@ export default function Dapp() {
             if (contract) {
                 const prevAttempts = await contract.getCurrentAttempts(account);
                 if (prevAttempts.length) {
-                    const prevAttemptsStates = prevAttempts.map((attempt) => {
+                    const prevAttemptsStates = prevAttempts.map(attempt => {
                         const letters = Helpers.convertPrimesToLetterAndPosition(attempt);
                         return initialAttemptState.map((s, i) => {
                             return {
@@ -326,8 +326,7 @@ export default function Dapp() {
             <div className={'connect-wallet'}>
                 <div
                     className={`connect-wallet__button ${account ? 'connect-wallet--connected' : ''}`}
-                    onClick={web3Handler}
-                >
+                    onClick={web3Handler}>
                     {account ? 'Connected' : 'Connect Wallet'}
                 </div>
                 <div className={`connect-wallet__address`}>
@@ -336,8 +335,7 @@ export default function Dapp() {
                             className="connect-wallet__address-link"
                             href={`https://sepolia.etherscan.io/address/${account}`}
                             target="_blank"
-                            rel="noopener noreferrer"
-                        >
+                            rel="noopener noreferrer">
                             ({account.slice(0, 4)}...{account.slice(account.length - 4)})
                         </a>
                     )}
