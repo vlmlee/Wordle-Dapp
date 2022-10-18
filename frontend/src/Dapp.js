@@ -332,9 +332,14 @@ export default function Dapp() {
                 </div>
                 <div className={`connect-wallet__address`}>
                     {account && (
-                        <>
+                        <a
+                            className="connect-wallet__address-link"
+                            href={`https://sepolia.etherscan.io/address/${account}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
                             ({account.slice(0, 4)}...{account.slice(account.length - 4)})
-                        </>
+                        </a>
                     )}
                 </div>
             </div>

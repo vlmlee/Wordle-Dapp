@@ -84,6 +84,10 @@
         margin-top: 4px;
     }
 
+    &__address-link {
+        text-decoration: none;
+    }
+
     &--connected {
         background-color: #6aaa64;
         color: white;
