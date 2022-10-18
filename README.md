@@ -18,7 +18,7 @@ Then run:
 npm run deploy-wordle-and-create-puzzle-on-sepolia
 ```
 
-to deploy the smart contract on the Sepolia testnet and to create a new Wordle puzzle. The console will print out the deployer's wallet 
+To deploy the smart contract on the Sepolia testnet and to create a new Wordle puzzle. The console will print out the deployer's wallet 
 address and the contract's deployed address when the script finishes.
 
 To create a new Wordle puzzle, run:
