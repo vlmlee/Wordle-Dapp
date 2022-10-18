@@ -21,7 +21,7 @@ Then deploy your version onto the Sepolia testnet with:
 npm run deploy-wordle-and-create-puzzle-on-sepolia
 ```
 
-When the script finishes, the console will print out the deployer's wallet address and the contract's deployed address. If you want to create a new Wordle puzzle, edit the `$SOLUTION` environment variable and then run:
+When the script finishes, the console will print out the deployer's wallet address and the contract's deployed address. If you want to create a new Wordle puzzle, edit the `$SOLUTION` environment variable inside `.env` and then run:
 
 ```shell
 npm run create-new-wordle-sepolia
