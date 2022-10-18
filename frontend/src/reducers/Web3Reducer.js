@@ -1,11 +1,13 @@
 const baseW3State = {
     account: '',
-    contract: null
+    contract: null,
+    isConnected: false
 };
 
 const WEB3_ACTIONS = {
     UPDATE_ACCOUNT: 'UPDATE_ACCOUNT',
-    UPDATE_CONTRACT: 'UPDATE_CONTRACT'
+    UPDATE_CONTRACT: 'UPDATE_CONTRACT',
+    UPDATED_IS_CONNECTED: 'UPDATE_IS_CONNECTED'
 };
 
 const Web3Reducer = (state, action) => {
@@ -19,6 +21,11 @@ const Web3Reducer = (state, action) => {
             return {
                 ...state,
                 contract: action.payload
+            };
+        case WEB3_ACTIONS.UPDATED_IS_CONNECTED:
+            return {
+                ...state,
+                isConnected: action.payload
             };
         default:
             return state;

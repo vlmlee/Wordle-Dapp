@@ -24,7 +24,8 @@ export default function Dapp() {
             account,
             contract,
             error,
-            wordlePuzzleNumber
+            wordlePuzzleNumber,
+            isConnected
         },
         dispatch
     ] = useReducer(BaseReducer, initialState);
@@ -50,11 +51,15 @@ export default function Dapp() {
             type: WEB3_ACTIONS.UPDATE_CONTRACT,
             payload: _contract
         });
+        dispatch({
+            type: WEB3_ACTIONS.UPDATED_IS_CONNECTED,
+            payload: true
+        });
     };
 
     const makeAttempt = useCallback(
         async (e) => {
-            if (!isWordleSolved && attemptNumber < 5 && e.key === 'Enter') {
+            if (isConnected && !isWordleSolved && attemptNumber < 5 && e.key === 'Enter') {
                 const word = currentAttempt
                     .map((state) => state.value)
                     .join('')
@@ -71,7 +76,7 @@ export default function Dapp() {
                 await attemptToSolve(contract, currentAttempt);
             }
         },
-        [currentAttempt, attemptNumber, contract, isWordleSolved]
+        [currentAttempt, attemptNumber, contract, isWordleSolved, isConnected]
     );
 
     const deletePreviousLetter = useCallback(
@@ -144,7 +149,7 @@ export default function Dapp() {
 
     const enterLetter = useCallback(
         (e) => {
-            if (!isWordleSolved && e.keyCode >= 65 && e.keyCode <= 122) {
+            if (isConnected && !isWordleSolved && e.keyCode >= 65 && e.keyCode <= 122) {
                 const letterUsed = e.key?.toLowerCase();
                 const positionToInsert = currentAttempt.find((a) => a.value === '');
 
@@ -184,7 +189,7 @@ export default function Dapp() {
                 }
             }
         },
-        [currentAttempt, isWordleSolved]
+        [currentAttempt, isWordleSolved, isConnected]
     );
 
     const contractEventListener = useCallback(
@@ -323,6 +328,11 @@ export default function Dapp() {
             {error && (
                 <div className={'wordle__error-message'}>
                     <p>Unrecognized word</p>
+                </div>
+            )}
+            {!isConnected && (
+                <div className={'wordle__connection-error-message'}>
+                    <p>Please connect to a wallet to play</p>
                 </div>
             )}
             {isWordleSolved && (
