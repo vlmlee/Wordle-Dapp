@@ -27,7 +27,7 @@ When the script finishes, the console will print out the deployer's wallet addre
 npm run create-new-wordle-sepolia
 ```
 
-To interact with the smart contract, you'll need a frontend so in the command line, run:
+To interact with the smart contract, you'll need a frontend. So in the command line, run:
 
 ```shell
 cd frontend
