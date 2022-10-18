@@ -2,7 +2,9 @@
 
 Come play with it live [here](https://master.dme99r4sotkse.amplifyapp.com/).
 
-To deploy your own Wordle smart contract, create your own `.env` file and put in your Infura credentials:
+## Deploy to Sepolia Testnet with Infura
+
+First, create a `.env` file and put in your Infura credentials (make sure to `.gitignore` this file):
 
 ```shell
 INFURA_URL="https://sepolia.infura.io/v3/"
@@ -10,21 +12,49 @@ INFURA_API_KEY="<your-api-key>"
 MNEMONIC="<your-mnemonic>"
 PRIVATE_KEY="<your-private-key>"
 ADDRESS="<your-wallet-address>"
+SOLUTION="<your-wordle-solution>"
 ```
 
-Then run:
+Then to deploy the smart contract onto the Sepolia testnet and create a new Wordle puzzle, run:
 
 ```shell
 npm run deploy-wordle-and-create-puzzle-on-sepolia
 ```
 
-To deploy the smart contract on the Sepolia testnet and to create a new Wordle puzzle. The console will print out the deployer's wallet 
-address and the contract's deployed address when the script finishes.
+When the script finishes, the console will print out the deployer's wallet address and the contract's deployed address.
 
-To create a new Wordle puzzle, run:
+If you want to create a new Wordle puzzle, edit the `$SOLUTION` environment variable and then run:
 
 ```shell
 npm run create-new-wordle-sepolia
 ```
 
-You can change the puzzle solution in `scripts/create-new-wordle-puzzle.js` before you run the npm script.
+To interact with the smart contract, you'll need a frontend so run:
+
+```shell
+cd frontend
+npm install
+npm start
+```
+
+And that should spin up a React app that connects to your deployed contract. Look up the smart contract on [https://sepolia.etherscan.io/](https://sepolia.etherscan.io/) to make sure it's there, and you're set!
+
+## Testing locally
+
+You can also run this project locally with the hardhat test node with the commands:
+
+```shell
+npx hardhat node
+npm run deploy-local
+npm run create-new-wordle-local
+```
+
+## Testing
+
+To run the test suite and check what functionality has been tested, run:
+
+```shell
+npm test
+```
+
+The unit tests are not exhaustive and the smart contract has not been audited so please **do not use this in production**.

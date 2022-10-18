@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A boilerplate repository to get you started with Hardhat and Ethereum development",
   "scripts": {
-    "test": "hardhat test",
+    "test": "npx hardhat test",
     "deploy-local": "npx hardhat run scripts/deploy.js --network localhost",
     "deploy-and-create-wordle": "npx hardhat run scripts/deploy.js --network localhost && npx hardhat run scripts/create-new-wordle-puzzle.js --network localhost",
     "create-new-wordle-local": "npx hardhat run scripts/create-new-wordle-puzzle.js --network localhost",
