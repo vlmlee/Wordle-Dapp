@@ -364,6 +364,10 @@ export default function Dapp() {
                 error={error}
             />
             <Keyboard previousAttempts={previousAttempts} currentAttempt={currentAttempt} keysUsed={keysUsed} />
+            <div className={'wordle__created-by'}>
+                <a href={'https://github.com/vlmlee'}>- created by mlee &nbsp;</a>
+                <span>👀</span>
+            </div>
         </div>
     );
 }

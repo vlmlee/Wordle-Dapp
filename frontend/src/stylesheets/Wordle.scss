@@ -42,6 +42,28 @@
             width: 280px;
         }
     }
+
+    &__created-by {
+        position: absolute;
+        right: 30px;
+        bottom: 20px;
+        a {
+            color: #00000097;
+            font-family: New York, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+                'Noto Sans', 'Liberation Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+                'Noto Color Emoji';
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        span {
+            font-size: 13px;
+        }
+
+        a:hover {
+            text-decoration: none;
+        }
+    }
 }
 
 .empty-rows {
