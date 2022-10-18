@@ -15,7 +15,7 @@ ADDRESS="<your-wallet-address>"
 SOLUTION="<your-wordle-solution>"
 ```
 
-Then to deploy the smart contract onto the Sepolia testnet and create a new Wordle puzzle, run:
+Then to deploy the smart contract onto the Sepolia testnet, run:
 
 ```shell
 npm run deploy-wordle-and-create-puzzle-on-sepolia
