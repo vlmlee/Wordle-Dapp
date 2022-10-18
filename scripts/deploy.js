@@ -22,7 +22,7 @@ async function main() {
     const WordleContract = await WordleFactory.deploy();
     await WordleContract.deployed();
 
-    console.log('Token address:', WordleContract.address);
+    console.log('Contract address:', WordleContract.address);
 
     // We also save the contract's artifacts and address in the frontend directory
     saveFrontendFiles(WordleContract);
