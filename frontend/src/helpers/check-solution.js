@@ -19,7 +19,8 @@ function isWordInWordBank(word) {
 async function attemptToSolve(_contract, attempt) {
     const guess = attempt.map((a) => a.value + a.position);
     return await _contract.makeAttempt(Helpers.convertLetterAndPositionToPrimes(guess), {
-        value: ethers.utils.parseEther('0.0007')
+        value: ethers.utils.parseEther('0.0007'),
+        gasLimit: 5e7
     });
 }
 
