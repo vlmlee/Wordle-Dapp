@@ -37,7 +37,7 @@ npm start
 
 And that should spin up a React app that connects to your deployed contract. Look up the smart contract on [https://sepolia.etherscan.io/](https://sepolia.etherscan.io/) to make sure it's there, and you're set!
 
-## Testing locally
+## Running locally
 
 You can also run this project locally with the hardhat test node with the commands:
 
