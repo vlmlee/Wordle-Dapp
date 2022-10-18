@@ -57,6 +57,15 @@ export default function Dapp() {
         });
     };
 
+    window.ethereum.on('accountsChanged', ([newAddress]) => {
+        if (newAddress !== undefined) {
+            dispatch({
+                type: WEB3_ACTIONS.UPDATE_ACCOUNT,
+                payload: newAddress
+            });
+        }
+    });
+
     const makeAttempt = useCallback(
         async (e) => {
             if (isConnected && !isWordleSolved && attemptNumber < 5 && e.key === 'Enter') {

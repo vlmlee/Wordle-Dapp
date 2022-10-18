@@ -8,10 +8,10 @@ const WordleABI = require('../frontend/src/contracts/WordleABI.json');
 require('dotenv').config();
 
 async function createNewWordlePuzzle() {
-    const provider = new ethers.providers.JsonRpcProvider();
+    const provider = new ethers.providers.JsonRpcProvider(`${process.env.INFURA_URL + process.env.INFURA_API_KEY}`);
     // hardhat account #0
-    const wallet = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', provider);
-    const instance = new ethers.Contract(WordleAddress.address, WordleABI.abi, wallet);
+    const wallet = new ethers.Wallet(`${process.env.PRIVATE_KEY}`, provider);
+    const instance = new ethers.Contract('0x4333141C15060Fe9e763655849E31aB6E96C80AA', WordleABI.abi, wallet);
 
     const solution = ['r0', 'A1', 'l2', 'L3', 'y4', 'r5', 'a5', 'l5', 'y5'];
     const _primes = solution.map((letterPosition) => {
@@ -33,7 +33,9 @@ async function createNewWordlePuzzle() {
     const witnesses = calculateWitnesses(_primes, generator, _modulus);
     console.log('Witnesses: ', witnesses);
 
-    const createTx = await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses);
+    const createTx = await instance.createNewWordlePuzzle(_accumulator, _modulus, witnesses, {
+        gasLimit: 10000000
+    });
     const createTxReceipt = await createTx.wait();
 
     console.log(createTxReceipt);
