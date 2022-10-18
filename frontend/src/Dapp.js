@@ -63,6 +63,11 @@ export default function Dapp() {
                 type: WEB3_ACTIONS.UPDATE_ACCOUNT,
                 payload: newAddress
             });
+        } else {
+            dispatch({
+                type: WEB3_ACTIONS.UPDATE_ACCOUNT,
+                payload: ''
+            });
         }
     });
 
