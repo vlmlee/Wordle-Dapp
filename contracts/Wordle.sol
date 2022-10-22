@@ -12,7 +12,7 @@ interface ILeaderboard {
 // solve through guessing and checking. In fact, you should be able to solve Wordle in less than
 // 6 tries! This contract is also not meant to cryptographically secure the secret. This is a demonstration
 // to show that a solution can be encrypted in a RSA accumulator without revealing what the secret (the Wordle
-// solution) is. This is -not- a zero knowledge proof since the proofs/witnesses are provided below.
+// solution) is.
 contract Wordle {
     address public owner;
     uint256 public wordlePuzzleNo = 0; // updated daily
