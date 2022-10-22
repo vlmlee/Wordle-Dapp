@@ -3,7 +3,7 @@ import Letter from './Letter';
 import FauxRow from './FauxRow';
 
 export default function Wordle({ previousAttempts, currentAttempt, attemptNumber, error }) {
-    let attemptsLeft = 5 - attemptNumber;
+    let attemptsLeft = 6 - attemptNumber;
 
     const generatedPreviousAttempts = () => {
         return previousAttempts.map((_attempts, i) => (
@@ -22,7 +22,7 @@ export default function Wordle({ previousAttempts, currentAttempt, attemptNumber
 
     const generateEmptyRows = () => {
         let arr = [];
-        for (let i = 0; i < attemptsLeft; i++) {
+        for (let i = 1; i < attemptsLeft; i++) {
             arr.push(<FauxRow key={`empty-rows-${i}`} />);
         }
         return arr;
@@ -33,17 +33,19 @@ export default function Wordle({ previousAttempts, currentAttempt, attemptNumber
             {previousAttempts && previousAttempts.length > 0 && (
                 <div className={'previous-attempts'}>{generatedPreviousAttempts()}</div>
             )}
-            <div className={`current-attempt ${error ? 'current-attempt--animate' : ''}`}>
-                {currentAttempt &&
-                    currentAttempt.map((letter, i) => (
-                        <Letter
-                            key={`current-attempt__letter-${i}`}
-                            position={letter.position}
-                            solveState={letter.solveState}
-                            value={letter.value}
-                        />
-                    ))}
-            </div>
+            {attemptsLeft > 0 && (
+                <div className={`current-attempt ${error ? 'current-attempt--animate' : ''}`}>
+                    {currentAttempt &&
+                        currentAttempt.map((letter, i) => (
+                            <Letter
+                                key={`current-attempt__letter-${i}`}
+                                position={letter.position}
+                                solveState={letter.solveState}
+                                value={letter.value}
+                            />
+                        ))}
+                </div>
+            )}
             <div className={'empty-rows'}>{generateEmptyRows()}</div>
         </div>
     );

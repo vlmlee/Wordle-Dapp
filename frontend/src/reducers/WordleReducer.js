@@ -16,7 +16,8 @@ const baseWordleState = {
     keysUsed: [],
     isWordleSolved: false,
     currentAttempt: initialAttemptState,
-    error: false
+    error: false,
+    tooManyAttempts: false
 };
 
 const WORDLE_ACTIONS = {
@@ -28,7 +29,8 @@ const WORDLE_ACTIONS = {
     ATTEMPT_SOLVE: 'ATTEMPT_SOLVE',
     UPDATE_ERROR: 'UPDATE_ERROR',
     UPDATE_WORDLE_PUZZLE_NUMBER: 'UPDATE_WORDLE_PUZZLE_NUMBER',
-    SET_PREVIOUS_ATTEMPTS: 'SET_PREVIOUS_ATTEMPTS'
+    SET_PREVIOUS_ATTEMPTS: 'SET_PREVIOUS_ATTEMPTS',
+    UPDATE_TOO_MANY_ATTEMPTS_ERROR: 'UPDATE_TOO_MANY_ATTEMPTS_ERROR'
 };
 
 const WordleReducer = (state, action) => {
@@ -86,6 +88,11 @@ const WordleReducer = (state, action) => {
                 ...state,
                 previousAttempts: action.payload.previousAttempts,
                 attemptNumber: action.payload.attemptNumber
+            };
+        case WORDLE_ACTIONS.UPDATE_TOO_MANY_ATTEMPTS_ERROR:
+            return {
+                ...state,
+                tooManyAttempts: true
             };
         default:
             return state;

@@ -25,7 +25,8 @@ export default function Dapp() {
             contract,
             error,
             wordlePuzzleNumber,
-            isConnected
+            isConnected,
+            tooManyAttempts
         },
         dispatch
     ] = useReducer(BaseReducer, initialState);
@@ -73,7 +74,14 @@ export default function Dapp() {
 
     const makeAttempt = useCallback(
         async e => {
-            if (isConnected && !isWordleSolved && attemptNumber < 5 && e.key === 'Enter') {
+            if (attemptNumber >= 6) {
+                dispatch({
+                    type: WORDLE_ACTIONS.UPDATE_TOO_MANY_ATTEMPTS_ERROR,
+                    payload: true
+                });
+            }
+
+            if (isConnected && !isWordleSolved && attemptNumber < 6 && e.key === 'Enter') {
                 const word = currentAttempt
                     .map(state => state.value)
                     .join('')
@@ -102,7 +110,7 @@ export default function Dapp() {
                 });
             }
 
-            if (!isWordleSolved && attemptNumber < 5 && (e.key === 'Backspace' || e.key === 'Delete')) {
+            if (!isWordleSolved && attemptNumber < 6 && (e.key === 'Backspace' || e.key === 'Delete')) {
                 const letterAfterDesiredPositionToInvalidate = currentAttempt.find(a => a.value === '');
 
                 if (!letterAfterDesiredPositionToInvalidate) {
@@ -345,6 +353,11 @@ export default function Dapp() {
             {error && (
                 <div className={'wordle__error-message'}>
                     <p>Unrecognized word</p>
+                </div>
+            )}
+            {tooManyAttempts && (
+                <div className={'wordle__error-message'}>
+                    <p>You've past the allowed attempts. Try again next time.</p>
                 </div>
             )}
             {!isConnected && (
