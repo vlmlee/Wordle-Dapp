@@ -11,6 +11,7 @@
     }
 
     &__connection-error-message,
+    &__error-message--too-many-attempts,
     &__error-message,
     &__solved-message {
         position: absolute;
@@ -34,6 +35,13 @@
         p.--green {
             background: #6aaa64;
             box-shadow: 0 2px 6px #6aaa6480;
+        }
+    }
+
+    &__error-message--too-many-attempts {
+        p {
+            width: fit-content;
+            padding: 8px 30px;
         }
     }
 

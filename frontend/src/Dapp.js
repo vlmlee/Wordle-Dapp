@@ -356,7 +356,7 @@ export default function Dapp() {
                 </div>
             )}
             {tooManyAttempts && (
-                <div className={'wordle__error-message'}>
+                <div className={'wordle__error-message--too-many-attempts'}>
                     <p>You've past the allowed attempts. Try again next time.</p>
                 </div>
             )}
