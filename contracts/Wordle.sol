@@ -3,9 +3,6 @@ pragma solidity ^0.8.0;
 
 import "./WordleLeaderboard.sol";
 
-interface ILeaderboard {
-
-}
 
 // The solution for this puzzle can be easily obtained by a computer through brute force since
 // the witnesses are embedded inside of this contract. This puzzle is not meant to be impossible to
@@ -19,9 +16,8 @@ contract Wordle {
     uint256 public accumulator;
     uint256 public modulus;
     uint256[] public witnesses;
-    uint8 public constant MAX_ATTEMPTS = 5;
     uint256 public constant FEE = 700_000 gwei;
-    ILeaderboard public leaderboard;
+    uint8 public constant MAX_ATTEMPTS = 5;
 
     event WithdrawalSuccessful(uint256 _value);
     event PlayerMadeAttempt(address indexed _player, uint8 attemptNumber, uint256 _wordlePuzzleNo, bool[] _answer, bool isSolved);
@@ -80,21 +76,6 @@ contract Wordle {
         return players;
     }
 
-    function setLeaderboardAddress(address _addr) external MustBeOwner payable {
-        leaderboard = ILeaderboard(_addr);
-    }
-
-    function fundLeaderboard(uint256 _amount) external MustBeOwner payable {
-        if (!((payable(address(this)).balance) > 0)) revert ContractHasNoBalance();
-        if (_amount > (payable(address(this)).balance)) revert ContractDoesNotHaveEnoughFunds(_amount);
-
-        (bool success,) = payable(address(leaderboard)).call{value : _amount}("");
-
-        if (success) {
-            emit LeaderboardSuccessfullyFunded(address(leaderboard), _amount);
-        }
-    }
-
     function createNewWordlePuzzle(uint256 _accumulator, uint256 _modulus, uint256[] calldata _witnesses) external MustBeOwner {
         accumulator = _accumulator;
         modulus = _modulus;
@@ -126,8 +107,10 @@ contract Wordle {
             answer[i] = isMember;
         }
 
-        if ((playerPuzzleSolvedCount[msg.sender] == 0) && !playerHasAlreadyPlayed(msg.sender)) {
-            players.push(msg.sender);
+        if (playerPuzzleSolvedCount[msg.sender] == 0) {
+            if (!playerHasAlreadyPlayed(msg.sender)) {
+                players.push(msg.sender);
+            }
         }
 
         uint256[][] storage attemptsArr = currentAttempts[msg.sender][wordlePuzzleNo];
@@ -151,8 +134,10 @@ contract Wordle {
     }
 
     function resetAllAttempts() public MustBeOwner {
-        for (uint256 i = 0; i < players.length; i++) {
-            for (uint256 j = 0; j <= wordlePuzzleNo; j++) {
+        uint256 _playersLength = players.length;
+        uint256 _wordlePuzzleNo = wordlePuzzleNo;
+        for (uint256 i = 0; i < _playersLength; i++) {
+            for (uint256 j = 0; j <= _wordlePuzzleNo; j++) {
                 delete currentAttempts[players[i]][j];
                 delete currentAnswers[players[i]][j];
             }
@@ -162,8 +147,10 @@ contract Wordle {
 
     function playerHasAlreadyPlayed(address _player) internal view returns (bool found) {
         found = false;
-        for (uint256 i = 0; i < players.length; i++) {
-            if (players[i] == _player) found = true;
+        address[] memory _players = players;
+        uint256 _playersLength = _players.length;
+        for (uint256 i = 0; i < _playersLength; i++) {
+            if (_players[i] == _player) found = true;
         }
     }
 
@@ -179,8 +166,10 @@ contract Wordle {
     // The wordle witnesses will always map:
     // [ 0µ, 1µ, 2µ, 3µ, 4µ, ...(2-5 µ, depending on the word) ]
     function verifyMembership(uint256 guess) public view WordleMustBeReady returns (bool) {
-        for (uint8 i = 5; i < witnesses.length; i++) {
-            uint256 witness = witnesses[i];
+        uint256[] memory _witnesses = witnesses;
+        uint256 _witnessesLength = _witnesses.length;
+        for (uint8 i = 5; i < _witnessesLength; i++) {
+            uint256 witness = _witnesses[i];
             uint256 verification = guess > 2 ** 16 ? powerMod(witness, guess, modulus) : fastModExp(witness, guess, modulus);
             if (verification == accumulator) {
                 return true;
@@ -192,7 +181,8 @@ contract Wordle {
 
     // Checks if the letter is in the correct position.
     function verifyPosition(uint8 index, uint256 guess) public view WordleMustBeReady returns (bool) {
-        uint256 witness = witnesses[index];
+        uint256[] memory _witnesses = witnesses;
+        uint256 witness = _witnesses[index];
         // witnesses[index] = G**[Set \ value@index] % modulus
         uint256 verification = guess > 2 ** 16 ? powerMod(witness, guess, modulus) : fastModExp(witness, guess, modulus);
 
