@@ -32,7 +32,7 @@ export default function Dapp() {
     ] = useReducer(BaseReducer, initialState);
 
     const web3Handler = async () => {
-        const accounts = await window.ethereum.request({
+        const accounts = await window.ethereum?.request({
             method: 'eth_requestAccounts'
         });
         dispatch({
@@ -58,7 +58,7 @@ export default function Dapp() {
         });
     };
 
-    window.ethereum.on('accountsChanged', ([newAddress]) => {
+    window.ethereum?.on('accountsChanged', ([newAddress]) => {
         if (newAddress !== undefined) {
             dispatch({
                 type: WEB3_ACTIONS.UPDATE_ACCOUNT,
